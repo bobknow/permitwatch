@@ -45,8 +45,18 @@ export default function BoilerForm({
         );
       }
 
-      router.push(`/properties/${propertyId}`);
-      router.refresh();
+      const boilerId = result.boiler?.id;
+
+if (!boilerId) {
+  throw new Error(
+    "Boiler saved, but no boiler ID was returned."
+  );
+}
+
+router.push(
+  `/properties/${propertyId}/boilers/${boilerId}`
+);
+router.refresh();
     } catch (error) {
       alert(
         error instanceof Error

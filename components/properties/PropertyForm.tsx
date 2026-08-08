@@ -1,10 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function PropertyForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const customerId =
+    searchParams.get("customerId") ??
+    searchParams.get("customer");
+
   const [loading, setLoading] = useState(false);
 
   const [form, setForm] = useState({
@@ -16,7 +22,9 @@ export default function PropertyForm() {
     notes: "",
   });
 
-  async function submit(e: React.FormEvent<HTMLFormElement>) {
+  async function submit(
+    e: React.FormEvent<HTMLFormElement>
+  ) {
     e.preventDefault();
     setLoading(true);
 
@@ -26,18 +34,39 @@ export default function PropertyForm() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          ...form,
+          customer_id: customerId,
+        }),
       });
 
+      const result = await res.json();
+
       if (!res.ok) {
-        const result = await res.json();
-        throw new Error(result.error?.message || result.error || "Unable to save property.");
+        throw new Error(
+          result.error?.message ||
+            result.error ||
+            "Unable to save property."
+        );
       }
 
-      router.push("/properties");
+      const propertyId = result.property?.id;
+
+      if (propertyId) {
+        router.push(`/properties/${propertyId}`);
+      } else if (customerId) {
+        router.push(`/customers/${customerId}`);
+      } else {
+        router.push("/properties");
+      }
+
       router.refresh();
     } catch (error) {
-      alert(error instanceof Error ? error.message : "Unable to save property.");
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Unable to save property."
+      );
     } finally {
       setLoading(false);
     }
@@ -46,15 +75,25 @@ export default function PropertyForm() {
   const inputClasses =
     "mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-slate-700 focus:ring-2 focus:ring-slate-200";
 
-  const labelClasses = "block text-sm font-semibold text-slate-800";
+  const labelClasses =
+    "block text-sm font-semibold text-slate-800";
 
   return (
     <form
       onSubmit={submit}
       className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-sm md:p-8"
     >
+      {customerId && (
+        <div className="rounded-lg bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+          This property will be connected to the selected customer.
+        </div>
+      )}
+
       <div>
-        <label htmlFor="property-name" className={labelClasses}>
+        <label
+          htmlFor="property-name"
+          className={labelClasses}
+        >
           Property Name
         </label>
 
@@ -64,12 +103,20 @@ export default function PropertyForm() {
           className={inputClasses}
           placeholder="Example: Market Street Apartments"
           value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
+          onChange={(e) =>
+            setForm({
+              ...form,
+              name: e.target.value,
+            })
+          }
         />
       </div>
 
       <div>
-        <label htmlFor="address" className={labelClasses}>
+        <label
+          htmlFor="address"
+          className={labelClasses}
+        >
           Street Address
         </label>
 
@@ -79,13 +126,21 @@ export default function PropertyForm() {
           className={inputClasses}
           placeholder="123 Market Street"
           value={form.address}
-          onChange={(e) => setForm({ ...form, address: e.target.value })}
+          onChange={(e) =>
+            setForm({
+              ...form,
+              address: e.target.value,
+            })
+          }
         />
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
         <div>
-          <label htmlFor="city" className={labelClasses}>
+          <label
+            htmlFor="city"
+            className={labelClasses}
+          >
             City
           </label>
 
@@ -95,12 +150,20 @@ export default function PropertyForm() {
             className={inputClasses}
             placeholder="San Francisco"
             value={form.city}
-            onChange={(e) => setForm({ ...form, city: e.target.value })}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                city: e.target.value,
+              })
+            }
           />
         </div>
 
         <div>
-          <label htmlFor="state" className={labelClasses}>
+          <label
+            htmlFor="state"
+            className={labelClasses}
+          >
             State
           </label>
 
@@ -120,7 +183,10 @@ export default function PropertyForm() {
         </div>
 
         <div>
-          <label htmlFor="zip" className={labelClasses}>
+          <label
+            htmlFor="zip"
+            className={labelClasses}
+          >
             ZIP Code
           </label>
 
@@ -132,13 +198,21 @@ export default function PropertyForm() {
             className={inputClasses}
             placeholder="94102"
             value={form.zip}
-            onChange={(e) => setForm({ ...form, zip: e.target.value })}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                zip: e.target.value,
+              })
+            }
           />
         </div>
       </div>
 
       <div>
-        <label htmlFor="notes" className={labelClasses}>
+        <label
+          htmlFor="notes"
+          className={labelClasses}
+        >
           Notes
         </label>
 
@@ -148,7 +222,12 @@ export default function PropertyForm() {
           className={inputClasses}
           placeholder="Optional property notes"
           value={form.notes}
-          onChange={(e) => setForm({ ...form, notes: e.target.value })}
+          onChange={(e) =>
+            setForm({
+              ...form,
+              notes: e.target.value,
+            })
+          }
         />
       </div>
 

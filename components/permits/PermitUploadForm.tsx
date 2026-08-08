@@ -8,6 +8,12 @@ type PermitUploadFormProps = {
   boilerId: string;
 };
 
+type UploadStage =
+  | "idle"
+  | "uploading"
+  | "extracting"
+  | "complete";
+
 const allowedTypes = [
   "application/pdf",
   "image/jpeg",
@@ -25,16 +31,20 @@ export default function PermitUploadForm({
 
   const [file, setFile] = useState<File | null>(null);
   const [dragging, setDragging] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [stage, setStage] = useState<UploadStage>("idle");
+  const [error, setError] = useState<string | null>(null);
+
+  const isWorking =
+    stage === "uploading" || stage === "extracting";
 
   function validateFile(selectedFile: File) {
     if (!allowedTypes.includes(selectedFile.type)) {
-      alert("Please select a PDF, JPG, JPEG, or PNG file.");
+      setError("Please select a PDF, JPG, JPEG, or PNG file.");
       return false;
     }
 
     if (selectedFile.size > maxFileSize) {
-      alert("The file must be 25 MB or smaller.");
+      setError("The file must be 25 MB or smaller.");
       return false;
     }
 
@@ -46,16 +56,18 @@ export default function PermitUploadForm({
       return;
     }
 
+    setError(null);
     setFile(selectedFile);
   }
 
   async function uploadPermit() {
     if (!file) {
-      alert("Select a permit file first.");
+      setError("Select a permit file first.");
       return;
     }
 
-    setUploading(true);
+    setError(null);
+    setStage("uploading");
 
     try {
       const formData = new FormData();
@@ -64,32 +76,77 @@ export default function PermitUploadForm({
       formData.append("property_id", propertyId);
       formData.append("boiler_id", boilerId);
 
-      const response = await fetch("/api/permits/upload", {
+      const uploadResponse = await fetch("/api/permits/upload", {
         method: "POST",
         body: formData,
       });
 
-      const result = await response.json();
+      const uploadResult = await uploadResponse.json();
 
-      if (!response.ok) {
+      if (!uploadResponse.ok) {
         throw new Error(
-          result.error || "Unable to upload permit."
+          uploadResult.error || "Unable to upload permit."
         );
       }
+
+      const permitId = uploadResult.permit?.id;
+
+      if (!permitId) {
+        throw new Error(
+          "The permit uploaded, but no permit ID was returned."
+        );
+      }
+
+      setStage("extracting");
+
+      const ocrResponse = await fetch(
+        `/api/permits/${permitId}/ocr`,
+        {
+          method: "POST",
+        }
+      );
+
+      const ocrResult = await ocrResponse.json();
+
+      if (!ocrResponse.ok) {
+        throw new Error(
+          ocrResult.error ||
+            "The permit uploaded, but automatic extraction failed."
+        );
+      }
+
+      setStage("complete");
 
       router.push(
         `/properties/${propertyId}/boilers/${boilerId}`
       );
+
       router.refresh();
     } catch (error) {
-      alert(
+      setStage("idle");
+
+      setError(
         error instanceof Error
           ? error.message
-          : "Unable to upload permit."
+          : "Unable to process permit."
       );
-    } finally {
-      setUploading(false);
     }
+  }
+
+  function buttonText() {
+    if (stage === "uploading") {
+      return "Uploading...";
+    }
+
+    if (stage === "extracting") {
+      return "Reading Permit...";
+    }
+
+    if (stage === "complete") {
+      return "Complete";
+    }
+
+    return "Upload Permit";
   }
 
   return (
@@ -107,11 +164,17 @@ export default function PermitUploadForm({
       <div
         onDragEnter={(event) => {
           event.preventDefault();
-          setDragging(true);
+
+          if (!isWorking) {
+            setDragging(true);
+          }
         }}
         onDragOver={(event) => {
           event.preventDefault();
-          setDragging(true);
+
+          if (!isWorking) {
+            setDragging(true);
+          }
         }}
         onDragLeave={(event) => {
           event.preventDefault();
@@ -120,7 +183,10 @@ export default function PermitUploadForm({
         onDrop={(event) => {
           event.preventDefault();
           setDragging(false);
-          selectFile(event.dataTransfer.files?.[0]);
+
+          if (!isWorking) {
+            selectFile(event.dataTransfer.files?.[0]);
+          }
         }}
         className={`rounded-2xl border-2 border-dashed p-10 text-center transition md:p-16 ${
           dragging
@@ -143,7 +209,8 @@ export default function PermitUploadForm({
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="mt-6 rounded-lg bg-slate-900 px-5 py-3 font-semibold text-white transition hover:bg-slate-700"
+          disabled={isWorking}
+          className="mt-6 rounded-lg bg-slate-900 px-5 py-3 font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
           Browse Files
         </button>
@@ -163,21 +230,41 @@ export default function PermitUploadForm({
             {(file.size / 1024 / 1024).toFixed(2)} MB
           </p>
 
+          {stage === "extracting" && (
+            <p className="mt-4 font-semibold text-slate-700">
+              Reading permit information and updating the boiler...
+            </p>
+          )}
+
+          {error && (
+            <p className="mt-4 font-medium text-red-600">
+              {error}
+            </p>
+          )}
+
           <div className="mt-5 flex flex-wrap gap-3">
             <button
               type="button"
               onClick={uploadPermit}
-              disabled={uploading}
-              className="rounded-lg bg-slate-900 px-5 py-3 font-semibold text-white transition hover:bg-slate-700 disabled:opacity-60"
+              disabled={isWorking}
+              className="rounded-lg bg-slate-900 px-5 py-3 font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {uploading ? "Uploading..." : "Upload Permit"}
+              {buttonText()}
             </button>
 
             <button
               type="button"
-              onClick={() => setFile(null)}
-              disabled={uploading}
-              className="rounded-lg border border-slate-300 bg-white px-5 py-3 font-semibold text-slate-700 hover:bg-slate-100 disabled:opacity-60"
+              onClick={() => {
+                setFile(null);
+                setError(null);
+                setStage("idle");
+
+                if (fileInputRef.current) {
+                  fileInputRef.current.value = "";
+                }
+              }}
+              disabled={isWorking}
+              className="rounded-lg border border-slate-300 bg-white px-5 py-3 font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Remove
             </button>

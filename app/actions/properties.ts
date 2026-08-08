@@ -1,43 +1,125 @@
 "use server";
 
-import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 
-export async function createProperty(formData: FormData) {
-  const supabase = await createClient();
+import {
+  getPropertyLimit,
+  requireActiveSubscription,
+} from "@/lib/billing";
+
+function getTextValue(
+  formData: FormData,
+  field: string
+) {
+  const value = formData.get(field);
+
+  return typeof value === "string"
+    ? value.trim()
+    : "";
+}
+
+export async function createProperty(
+  formData: FormData
+) {
+  const {
+    supabase,
+    tenant,
+    planName,
+  } = await requireActiveSubscription(
+    "/properties/new"
+  );
+
+  const propertyLimit =
+    getPropertyLimit(planName);
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("tenant_id")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile?.tenant_id) {
-    throw new Error("User is not assigned to a tenant.");
-  }
-
-  const { error } = await supabase
+    count: propertyCount,
+    error: countError,
+  } = await supabase
     .from("properties")
-    .insert({
-      tenant_id: profile.tenant_id,
-      property_name: formData.get("property_name"),
-      address_line_1: formData.get("address_line_1"),
-      city: formData.get("city"),
-      state: formData.get("state"),
-      postal_code: formData.get("postal_code"),
-    });
+    .select("id", {
+      count: "exact",
+      head: true,
+    })
+    .eq("tenant_id", tenant.id);
 
-  if (error) {
-    console.error(error);
-    throw new Error(error.message);
+  if (countError) {
+    console.error(
+      "Unable to count properties:",
+      countError
+    );
+
+    throw new Error(
+      "Unable to verify your property allowance."
+    );
+  }
+
+  const currentPropertyCount =
+    propertyCount ?? 0;
+
+  if (
+    Number.isFinite(propertyLimit) &&
+    currentPropertyCount >= propertyLimit
+  ) {
+    redirect(
+      `/properties?error=property_limit&plan=${planName}&limit=${propertyLimit}`
+    );
+  }
+
+  const propertyName = getTextValue(
+    formData,
+    "property_name"
+  );
+
+  const addressLine1 = getTextValue(
+    formData,
+    "address_line_1"
+  );
+
+  const city = getTextValue(
+    formData,
+    "city"
+  );
+
+  const state = getTextValue(
+    formData,
+    "state"
+  );
+
+  const postalCode = getTextValue(
+    formData,
+    "postal_code"
+  );
+
+  if (!propertyName) {
+    throw new Error(
+      "Property name is required."
+    );
+  }
+
+  const { error: insertError } =
+    await supabase
+      .from("properties")
+      .insert({
+        tenant_id: tenant.id,
+        property_name: propertyName,
+        address_line_1:
+          addressLine1 || null,
+        city: city || null,
+        state: state || null,
+        postal_code:
+          postalCode || null,
+      });
+
+  if (insertError) {
+    console.error(
+      "Unable to create property:",
+      insertError
+    );
+
+    throw new Error(
+      insertError.message
+    );
   }
 
   redirect("/properties");

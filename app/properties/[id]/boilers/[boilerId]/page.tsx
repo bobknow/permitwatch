@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+
+import DeleteBoilerButton from "@/components/boilers/DeleteBoilerButton";
+import ExtractPermitButton from "@/components/permits/ExtractPermitButton";
 import { getCurrentProfile } from "@/lib/currentProfile";
+import { createClient } from "@/lib/supabase/server";
+
 
 type BoilerPageProps = {
   params: Promise<{
@@ -41,15 +45,14 @@ export default async function BoilerPage({
   }
 
   const { data: boiler, error: boilerError } = await supabase
-    .from("boilers")
-    .select(`
-      id,
-      property_id,
-      boiler_number,
-      model_number,
-      serial_number,
-      created_at
-    `)
+  .from("boilers")
+  .select(`
+    id,
+    property_id,
+    boiler_number,
+    model_number,
+    serial_number
+  `)
     .eq("id", boilerId)
     .eq("property_id", property.id)
     .eq("tenant_id", profile.tenant_id)
@@ -59,32 +62,33 @@ export default async function BoilerPage({
     notFound();
   }
 
-  const { data: permits, error: permitsError } = await supabase
+  const { data: currentPermit, error: permitError } = await supabase
     .from("permits")
     .select(`
       id,
       permit_number,
       status,
-      source_filename,
-      storage_path,
       ocr_status,
-      issued_date,
+      storage_path,
       inspection_date,
       expiration_date,
+      installation_address,
+      inspector_name,
+      inspector_firm,
+      inspector_phone,
       created_at
     `)
     .eq("boiler_id", boiler.id)
     .eq("tenant_id", profile.tenant_id)
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
 
-  if (permitsError) {
-    console.error("Unable to load permits:", permitsError);
+  if (permitError) {
+    console.error("Unable to load current permit:", permitError);
   }
 
-  const permitHistory = permits ?? [];
-  const currentPermit = permitHistory[0] ?? null;
-
-  const fullAddress = [
+  const propertyAddress = [
     property.address_line_1,
     property.city,
     property.state,
@@ -95,31 +99,60 @@ export default async function BoilerPage({
 
   function formatDate(date: string | null) {
     if (!date) {
-      return null;
+      return "Not available";
     }
 
-    return new Date(`${date}T00:00:00`).toLocaleDateString(
-      "en-US",
-      {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      }
-    );
+    return new Date(`${date}T00:00:00`).toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
   }
 
-  function formatStatus(status: string | null) {
-    if (!status) {
-      return "Pending";
-    }
+  const needsExtraction =
+    currentPermit &&
+    (currentPermit.ocr_status === "pending" ||
+      currentPermit.ocr_status === "failed");
 
-    return status
-      .split("_")
-      .map(
-        (word) =>
-          word.charAt(0).toUpperCase() + word.slice(1)
-      )
-      .join(" ");
+  const today = new Date();
+
+  const expirationDate = currentPermit?.expiration_date
+    ? new Date(`${currentPermit.expiration_date}T00:00:00`)
+    : null;
+
+  let complianceLabel = "Unknown";
+  let complianceColor = "bg-slate-100 text-slate-700";
+  let complianceMessage = "No expiration date available";
+
+  if (expirationDate) {
+    const todayStart = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
+
+    const daysRemaining = Math.ceil(
+      (expirationDate.getTime() - todayStart.getTime()) /
+        (1000 * 60 * 60 * 24)
+    );
+
+    if (daysRemaining < 0) {
+      complianceLabel = "Expired";
+      complianceColor = "bg-red-50 text-red-700";
+      complianceMessage = `${Math.abs(daysRemaining)} ${
+        Math.abs(daysRemaining) === 1 ? "day" : "days"
+      } overdue`;
+    } else if (daysRemaining <= 30) {
+      complianceLabel = "Expiring Soon";
+      complianceColor = "bg-amber-50 text-amber-700";
+      complianceMessage = `${daysRemaining} ${
+        daysRemaining === 1 ? "day" : "days"
+      } remaining`;
+    } else {
+      complianceLabel = "Current";
+      complianceColor = "bg-emerald-50 text-emerald-700";
+      complianceMessage = `${daysRemaining} days remaining`;
+    }
   }
 
   return (
@@ -133,7 +166,7 @@ export default async function BoilerPage({
         </Link>
 
         <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+          <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                 {property.property_name}
@@ -144,129 +177,112 @@ export default async function BoilerPage({
               </h1>
 
               <p className="mt-2 text-slate-600">
-                {fullAddress}
+                {propertyAddress}
               </p>
             </div>
 
             {currentPermit ? (
-              <span className="inline-flex w-fit rounded-full bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700">
-                {currentPermit.ocr_status === "pending"
-                  ? "Pending Review"
-                  : formatStatus(currentPermit.status)}
-              </span>
+              <div className="md:text-right">
+                <span
+                  className={`inline-flex w-fit rounded-full px-4 py-2 text-sm font-semibold ${complianceColor}`}
+                >
+                  {complianceLabel}
+                </span>
+
+                <p className="mt-2 text-sm text-slate-500">
+                  {complianceMessage}
+                </p>
+              </div>
             ) : (
               <span className="inline-flex w-fit rounded-full bg-red-50 px-4 py-2 text-sm font-semibold text-red-700">
-                No Permit Uploaded
+                No Permit
               </span>
             )}
           </div>
 
-          <div className="mt-8 grid gap-5 md:grid-cols-2">
-            <div className="rounded-xl bg-slate-50 p-5">
-              <p className="text-sm font-medium text-slate-500">
-                Model Number
-              </p>
+          <div className="mt-8 grid gap-5 md:grid-cols-3">
+  <div className="rounded-xl bg-slate-50 p-5">
+    <p className="text-sm font-medium text-slate-500">
+      Model Number
+    </p>
 
-              <p className="mt-2 text-lg font-bold text-slate-900">
-                {boiler.model_number || "Not provided"}
-              </p>
-            </div>
+    <p className="mt-2 text-lg font-bold text-slate-900">
+      {boiler.model_number || "Not provided"}
+    </p>
+  </div>
 
-            <div className="rounded-xl bg-slate-50 p-5">
-              <p className="text-sm font-medium text-slate-500">
-                Serial Number
-              </p>
+  <div className="rounded-xl bg-slate-50 p-5">
+    <p className="text-sm font-medium text-slate-500">
+      Serial Number
+    </p>
 
-              <p className="mt-2 text-lg font-bold text-slate-900">
-                {boiler.serial_number || "Not provided"}
-              </p>
-            </div>
+    <p className="mt-2 text-lg font-bold text-slate-900">
+      {boiler.serial_number || "Not provided"}
+    </p>
+  </div>
+
+  <div className="rounded-xl bg-slate-50 p-5">
+    <p className="text-sm font-medium text-slate-500">
+      Installation Address
+    </p>
+
+    <p className="mt-2 text-lg font-bold text-slate-900">
+      {currentPermit?.installation_address ||
+        propertyAddress ||
+        "Not provided"}
+    </p>
+  </div>
+</div>
+          <div className="mt-6 border-t border-slate-200 pt-6">
+            <DeleteBoilerButton
+              boilerId={boiler.id}
+              boilerNumber={boiler.boiler_number}
+            />
           </div>
         </section>
-
-        <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+                <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+          <div className="flex flex-col gap-4 border-b border-slate-200 pb-6 md:flex-row md:items-start md:justify-between">
             <div>
-              <h2 className="text-2xl font-black text-slate-900">
-                Active Permit
-              </h2>
-
-              <p className="mt-2 text-slate-600">
-                Upload and track the active permit for this boiler.
+              <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                Current Permit
               </p>
+
+              <h2 className="mt-2 text-3xl font-black text-slate-900">
+                {currentPermit?.permit_number
+                  ? `Permit #${currentPermit.permit_number}`
+                  : "No Current Permit"}
+              </h2>
             </div>
 
-            <Link
-              href={`/properties/${property.id}/boilers/${boiler.id}/permits/new`}
-              className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-5 py-3 font-semibold text-white transition hover:bg-slate-700"
-            >
-              Upload Permit
-            </Link>
+            {currentPermit && (
+              <div className="md:text-right">
+                <span
+                  className={`inline-flex w-fit rounded-full px-4 py-2 text-sm font-semibold ${complianceColor}`}
+                >
+                  {complianceLabel}
+                </span>
+
+                <p className="mt-2 text-sm text-slate-500">
+                  {complianceMessage}
+                </p>
+
+                <p className="mt-1 text-sm text-slate-500">
+                  Expires {formatDate(currentPermit.expiration_date)}
+                </p>
+              </div>
+            )}
           </div>
 
           {currentPermit ? (
-            <div className="mt-8 rounded-xl border border-slate-200 bg-slate-50 p-6">
-              <div className="grid gap-5 md:grid-cols-2">
-                <div>
-                  <p className="text-sm font-medium text-slate-500">
-                    File
-                  </p>
-
-                  <p className="mt-1 break-all font-semibold text-slate-900">
-                    {currentPermit.source_filename}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium text-slate-500">
-                    OCR Status
-                  </p>
-
-                  <p className="mt-1 font-semibold text-slate-900">
-                    {formatStatus(currentPermit.ocr_status)}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium text-slate-500">
-                    Permit Number
-                  </p>
-
-                  <p className="mt-1 font-semibold text-slate-900">
-                    {currentPermit.permit_number ||
-                      "Pending extraction"}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium text-slate-500">
-                    Permit Status
-                  </p>
-
-                  <p className="mt-1 font-semibold text-slate-900">
-                    {formatStatus(currentPermit.status)}
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium text-slate-500">
-                    Issued Date
-                  </p>
-
-                  <p className="mt-1 font-semibold text-slate-900">
-                    {formatDate(currentPermit.issued_date) ||
-                      "Pending extraction"}
-                  </p>
-                </div>
-
+            <>
+              <div className="grid gap-x-8 gap-y-6 py-8 md:grid-cols-2">
                 <div>
                   <p className="text-sm font-medium text-slate-500">
                     Inspection Date
                   </p>
 
                   <p className="mt-1 font-semibold text-slate-900">
-                    {formatDate(currentPermit.inspection_date) ||
-                      "Pending extraction"}
+                    {formatDate(currentPermit.inspection_date)}
                   </p>
                 </div>
 
@@ -275,104 +291,118 @@ export default async function BoilerPage({
                     Expiration Date
                   </p>
 
-                  <p className="mt-1 font-semibold text-slate-900">
-                    {formatDate(currentPermit.expiration_date) ||
-                      "Pending extraction"}
+                  <p className="mt-1 text-lg font-bold text-slate-900">
+                    {formatDate(currentPermit.expiration_date)}
                   </p>
                 </div>
 
                 <div>
                   <p className="text-sm font-medium text-slate-500">
-                    Uploaded
+                    Installation Address
                   </p>
 
                   <p className="mt-1 font-semibold text-slate-900">
-                    {new Date(
-                      currentPermit.created_at
-                    ).toLocaleDateString("en-US", {
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
+                    {currentPermit.installation_address || "Not available"}
                   </p>
                 </div>
-              </div>
-            </div>
-          ) : (
-            <div className="mt-8 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
-              <p className="font-semibold text-slate-900">
-                No permit uploaded
-              </p>
 
-              <p className="mt-2 text-sm text-slate-600">
-                Upload a permit to begin tracking status and
-                expiration.
-              </p>
-            </div>
-          )}
-        </section>
+                <div>
+                  <p className="text-sm font-medium text-slate-500">
+                    Inspector
+                  </p>
 
-        <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-          <h2 className="text-2xl font-black text-slate-900">
-            Permit History
-          </h2>
-
-          <p className="mt-2 text-slate-600">
-            All permits uploaded for this boiler.
-          </p>
-
-          {permitHistory.length === 0 ? (
-            <div className="mt-6 rounded-xl bg-slate-50 p-6">
-              <p className="text-sm font-medium text-slate-500">
-                No permit history yet.
-              </p>
-            </div>
-          ) : (
-            <div className="mt-6 space-y-3">
-              {permitHistory.map((permit, index) => (
-                <div
-                  key={permit.id}
-                  className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-slate-50 p-5 md:flex-row md:items-center md:justify-between"
-                >
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="break-all font-semibold text-slate-900">
-                        {permit.source_filename}
-                      </p>
-
-                      {index === 0 && (
-                        <span className="rounded-full bg-slate-900 px-2.5 py-1 text-xs font-semibold text-white">
-                          Latest
-                        </span>
-                      )}
-                    </div>
-
-                    <p className="mt-1 text-sm text-slate-500">
-                      Uploaded{" "}
-                      {new Date(
-                        permit.created_at
-                      ).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </p>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-sm font-semibold text-slate-600">
-                      {permit.permit_number ||
-                        "Permit number pending"}
-                    </span>
-
-                    <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600">
-                      {permit.ocr_status === "pending"
-                        ? "Pending Review"
-                        : formatStatus(permit.status)}
-                    </span>
-                  </div>
+                  <p className="mt-1 font-semibold text-slate-900">
+                    {currentPermit.inspector_name || "Not available"}
+                  </p>
                 </div>
-              ))}
+
+                <div>
+                  <p className="text-sm font-medium text-slate-500">
+                    Inspector Company
+                  </p>
+
+                  <p className="mt-1 font-semibold text-slate-900">
+                    {currentPermit.inspector_firm || "Not available"}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium text-slate-500">
+                    Inspector Phone
+                  </p>
+
+                  {currentPermit.inspector_phone ? (
+                    <a
+                      href={`tel:${currentPermit.inspector_phone}`}
+                      className="mt-1 inline-block font-semibold text-slate-900 hover:underline"
+                    >
+                      {currentPermit.inspector_phone}
+                    </a>
+                  ) : (
+                    <p className="mt-1 font-semibold text-slate-900">
+                      Not available
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-3 border-t border-slate-200 pt-6">
+                <Link
+                  href={`/properties/${property.id}/boilers/${boiler.id}/permits/new`}
+                  className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
+                >
+                  Upload
+                </Link>
+
+                {needsExtraction && (
+                  <ExtractPermitButton
+                    permitId={currentPermit.id}
+                    ocrStatus={currentPermit.ocr_status}
+                  />
+                )}
+
+                {currentPermit.storage_path && (
+                  <>
+                    <a
+                      href={`/api/permits/${currentPermit.id}/view`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                    >
+                      View PDF
+                    </a>
+
+                    <a
+                      href={`/api/permits/${currentPermit.id}/download`}
+                      className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                    >
+                      Download
+                    </a>
+
+                    <a
+                      href={`/api/permits/${currentPermit.id}/view`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                    >
+                      Print
+                    </a>
+                  </>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="py-8">
+              <p className="text-slate-600">
+                Upload a permit to begin tracking this boiler’s compliance.
+              </p>
+
+              <Link
+                href={`/properties/${property.id}/boilers/${boiler.id}/permits/new`}
+                className="mt-5 inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
+              >
+                Upload Permit
+              </Link>
             </div>
           )}
         </section>

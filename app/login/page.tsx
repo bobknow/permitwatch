@@ -1,47 +1,88 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useState } from "react";
+import { useSearchParams } from "next/navigation";
+
 import { createClient } from "@/lib/supabase/client";
 
+function getSafeNextPath(value: string | null) {
+  if (!value) {
+    return "/dashboard";
+  }
+
+  if (!value.startsWith("/") || value.startsWith("//")) {
+    return "/dashboard";
+  }
+
+  return value;
+}
+
 export default function LoginPage() {
+  const searchParams = useSearchParams();
+
+  const nextPath = getSafeNextPath(
+    searchParams.get("next")
+  );
+
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault();
 
     setIsLoading(true);
     setMessage("");
 
-    const supabase = createClient();
+    try {
+      const supabase = createClient();
 
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
+      const callbackUrl = new URL(
+        "/auth/callback",
+        window.location.origin
+      );
 
-    if (error) {
-      setMessage(error.message);
+      callbackUrl.searchParams.set("next", nextPath);
+
+      const { error } =
+        await supabase.auth.signInWithOtp({
+          email: email.trim().toLowerCase(),
+          options: {
+            emailRedirectTo: callbackUrl.toString(),
+            shouldCreateUser: false,
+          },
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      setMessage(
+        "Check your email for the PermitWatch login link."
+      );
+    } catch (error) {
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to send the login link."
+      );
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-    setMessage("Check your email for the PermitWatch login link.");
-    setIsLoading(false);
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 text-white">
+    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 py-12 text-white">
       <section className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-8 shadow-2xl">
         <div className="mb-8">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-400">
             PermitWatch
           </p>
 
-          <h1 className="mt-3 text-3xl font-black">
+          <h1 className="mt-3 text-3xl font-black text-white">
             Sign in to your account
           </h1>
 
@@ -50,7 +91,10 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-5"
+        >
           <div>
             <label
               htmlFor="email"
@@ -63,7 +107,9 @@ export default function LoginPage() {
               id="email"
               type="email"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(event) =>
+                setEmail(event.target.value)
+              }
               required
               autoComplete="email"
               placeholder="you@company.com"
@@ -76,15 +122,27 @@ export default function LoginPage() {
             disabled={isLoading}
             className="w-full rounded-xl bg-emerald-600 px-4 py-3 font-bold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isLoading ? "Sending link..." : "Send login link"}
+            {isLoading
+              ? "Sending link..."
+              : "Send login link"}
           </button>
         </form>
 
-        {message ? (
+        {message && (
           <p className="mt-5 rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-300">
             {message}
           </p>
-        ) : null}
+        )}
+
+        <p className="mt-6 text-center text-sm text-slate-400">
+          New to PermitWatch?{" "}
+          <Link
+            href="/signup"
+            className="font-semibold text-emerald-400 hover:text-emerald-300"
+          >
+            Create an account
+          </Link>
+        </p>
       </section>
     </main>
   );
