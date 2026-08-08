@@ -137,8 +137,34 @@ export default async function PermitsPage() {
     );
   }
 
-  const allPermits =
-    (data ?? []) as PermitRow[];
+  const allPermits: PermitRow[] = (data ?? []).map((row) => {
+  const boiler = Array.isArray(row.boiler)
+    ? row.boiler[0] ?? null
+    : row.boiler;
+
+  const property = boiler
+    ? Array.isArray(boiler.property)
+      ? boiler.property[0] ?? null
+      : boiler.property
+    : null;
+
+  return {
+    id: row.id,
+    permit_number: row.permit_number,
+    issued_date: row.issued_date,
+    expiration_date: row.expiration_date,
+    ocr_status: row.ocr_status,
+    status: row.status,
+    created_at: row.created_at,
+    boiler: boiler
+      ? {
+          id: boiler.id,
+          boiler_number: boiler.boiler_number,
+          property,
+        }
+      : null,
+  };
+});
 
   /*
    * Only show the newest permit for each boiler.

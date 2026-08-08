@@ -1,7 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import {
+  FormEvent,
+  Suspense,
+  useState,
+} from "react";
 import { useSearchParams } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/client";
@@ -18,7 +22,7 @@ function getSafeNextPath(value: string | null) {
   return value;
 }
 
-export default function LoginPage() {
+function LoginForm() {
   const searchParams = useSearchParams();
 
   const nextPath = getSafeNextPath(
@@ -29,9 +33,7 @@ export default function LoginPage() {
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  async function handleSubmit(
-    event: FormEvent<HTMLFormElement>
-  ) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault();
 
     setIsLoading(true);
@@ -45,13 +47,17 @@ export default function LoginPage() {
         window.location.origin
       );
 
-      callbackUrl.searchParams.set("next", nextPath);
+      callbackUrl.searchParams.set(
+        "next",
+        nextPath
+      );
 
       const { error } =
         await supabase.auth.signInWithOtp({
           email: email.trim().toLowerCase(),
           options: {
-            emailRedirectTo: callbackUrl.toString(),
+            emailRedirectTo:
+              callbackUrl.toString(),
             shouldCreateUser: false,
           },
         });
@@ -75,19 +81,23 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 py-12 text-white">
+    <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 py-12">
       <section className="w-full max-w-md rounded-2xl border border-slate-800 bg-slate-900 p-8 shadow-2xl">
         <div className="mb-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-400">
+          <Link
+            href="/"
+            className="text-sm font-bold uppercase tracking-[0.2em] text-emerald-400"
+          >
             PermitWatch
-          </p>
+          </Link>
 
           <h1 className="mt-3 text-3xl font-black text-white">
             Sign in to your account
           </h1>
 
           <p className="mt-3 text-sm leading-6 text-slate-400">
-            Enter your email and we&apos;ll send you a secure login link.
+            Enter your email and we&apos;ll send
+            you a secure login link.
           </p>
         </div>
 
@@ -145,5 +155,21 @@ export default function LoginPage() {
         </p>
       </section>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 py-12">
+          <div className="text-sm text-slate-400">
+            Loading PermitWatch...
+          </div>
+        </main>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

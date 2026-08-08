@@ -69,8 +69,32 @@ export default async function DocumentsPage() {
     );
   }
 
-  const documents =
-    (data ?? []) as DocumentRow[];
+  const documents: DocumentRow[] = (data ?? []).map((row) => {
+  const boiler = Array.isArray(row.boiler)
+    ? row.boiler[0] ?? null
+    : row.boiler;
+
+  const property = boiler
+    ? Array.isArray(boiler.property)
+      ? boiler.property[0] ?? null
+      : boiler.property
+    : null;
+
+  return {
+    id: row.id,
+    permit_number: row.permit_number,
+    source_filename: row.source_filename,
+    storage_path: row.storage_path,
+    created_at: row.created_at,
+    boiler: boiler
+      ? {
+          id: boiler.id,
+          boiler_number: boiler.boiler_number,
+          property,
+        }
+      : null,
+  };
+});;
 
   return (
     <main className="min-h-screen bg-slate-100 p-6 md:p-10">
