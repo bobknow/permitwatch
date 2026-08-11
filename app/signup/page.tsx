@@ -29,6 +29,8 @@ export default function SignupPage() {
   const [companyName, setCompanyName] = useState("");
   const [companyType, setCompanyType] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -51,9 +53,25 @@ export default function SignupPage() {
       !trimmedFullName ||
       !trimmedCompanyName ||
       !companyType ||
-      !trimmedEmail
+      !trimmedEmail ||
+      !password ||
+      !confirmPassword
     ) {
       setMessage("Complete all required fields.");
+      setIsLoading(false);
+      return;
+    }
+
+    if (password.length < 8) {
+      setMessage(
+        "Password must be at least 8 characters."
+      );
+      setIsLoading(false);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setMessage("Passwords do not match.");
       setIsLoading(false);
       return;
     }
@@ -61,12 +79,12 @@ export default function SignupPage() {
     try {
       const supabase = createClient();
 
-      const { error } =
-        await supabase.auth.signInWithOtp({
+      const { data, error } =
+        await supabase.auth.signUp({
           email: trimmedEmail,
+          password,
           options: {
             emailRedirectTo: `${window.location.origin}/auth/callback`,
-            shouldCreateUser: true,
             data: {
               full_name: trimmedFullName,
               company_name: trimmedCompanyName,
@@ -80,8 +98,14 @@ export default function SignupPage() {
       }
 
       setIsSuccess(true);
+
+      if (data.session) {
+        window.location.href = "/onboarding";
+        return;
+      }
+
       setMessage(
-        "Check your email to verify your account and finish setting up PermitWatch."
+        "Account created. Check your email to verify your address, then sign in to PermitWatch."
       );
     } catch (error) {
       setMessage(
@@ -107,7 +131,8 @@ export default function SignupPage() {
           </h1>
 
           <p className="mt-3 text-sm leading-6 text-slate-400">
-            Set up your organization and start tracking boiler permits.
+            Set up your organization and start tracking
+            boiler permits.
           </p>
         </div>
 
@@ -132,7 +157,7 @@ export default function SignupPage() {
               }
               required
               autoComplete="name"
-              placeholder="Bobbie Knowles"
+              placeholder="Jordan Carter"
               className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500"
             />
           </div>
@@ -154,7 +179,7 @@ export default function SignupPage() {
               }
               required
               autoComplete="organization"
-              placeholder="Acme Property Management"
+              placeholder="Redwood Property Management"
               className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500"
             />
           </div>
@@ -213,6 +238,52 @@ export default function SignupPage() {
             />
           </div>
 
+          <div>
+            <label
+              htmlFor="password"
+              className="mb-2 block text-sm font-semibold text-slate-200"
+            >
+              Password
+            </label>
+
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(event) =>
+                setPassword(event.target.value)
+              }
+              required
+              minLength={8}
+              autoComplete="new-password"
+              placeholder="At least 8 characters"
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="confirm_password"
+              className="mb-2 block text-sm font-semibold text-slate-200"
+            >
+              Confirm password
+            </label>
+
+            <input
+              id="confirm_password"
+              type="password"
+              value={confirmPassword}
+              onChange={(event) =>
+                setConfirmPassword(event.target.value)
+              }
+              required
+              minLength={8}
+              autoComplete="new-password"
+              placeholder="Re-enter your password"
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500"
+            />
+          </div>
+
           <button
             type="submit"
             disabled={isLoading || isSuccess}
@@ -221,7 +292,7 @@ export default function SignupPage() {
             {isLoading
               ? "Creating account..."
               : isSuccess
-                ? "Verification email sent"
+                ? "Account created"
                 : "Create Account"}
           </button>
         </form>

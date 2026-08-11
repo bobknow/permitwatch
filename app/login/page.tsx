@@ -30,6 +30,7 @@ function LoginForm() {
   );
 
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -42,38 +43,22 @@ function LoginForm() {
     try {
       const supabase = createClient();
 
-      const callbackUrl = new URL(
-        "/auth/callback",
-        window.location.origin
-      );
-
-      callbackUrl.searchParams.set(
-        "next",
-        nextPath
-      );
-
       const { error } =
-        await supabase.auth.signInWithOtp({
+        await supabase.auth.signInWithPassword({
           email: email.trim().toLowerCase(),
-          options: {
-            emailRedirectTo:
-              callbackUrl.toString(),
-            shouldCreateUser: false,
-          },
+          password,
         });
 
       if (error) {
         throw error;
       }
 
-      setMessage(
-        "Check your email for the PermitWatch login link."
-      );
+      window.location.href = nextPath;
     } catch (error) {
       setMessage(
         error instanceof Error
           ? error.message
-          : "Unable to send the login link."
+          : "Unable to sign in."
       );
     } finally {
       setIsLoading(false);
@@ -96,8 +81,8 @@ function LoginForm() {
           </h1>
 
           <p className="mt-3 text-sm leading-6 text-slate-400">
-            Enter your email and we&apos;ll send
-            you a secure login link.
+            Enter your email and password to access
+            PermitWatch.
           </p>
         </div>
 
@@ -127,19 +112,50 @@ function LoginForm() {
             />
           </div>
 
+          <div>
+            <div className="mb-2 flex items-center justify-between">
+              <label
+                htmlFor="password"
+                className="text-sm font-semibold text-slate-200"
+              >
+                Password
+              </label>
+
+              <Link
+                href="/forgot-password"
+                className="text-sm font-semibold text-emerald-400 hover:text-emerald-300"
+              >
+                Forgot password?
+              </Link>
+            </div>
+
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(event) =>
+                setPassword(event.target.value)
+              }
+              required
+              autoComplete="current-password"
+              placeholder="Enter your password"
+              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500"
+            />
+          </div>
+
           <button
             type="submit"
             disabled={isLoading}
             className="w-full rounded-xl bg-emerald-600 px-4 py-3 font-bold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isLoading
-              ? "Sending link..."
-              : "Send login link"}
+              ? "Signing in..."
+              : "Sign In"}
           </button>
         </form>
 
         {message && (
-          <p className="mt-5 rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-300">
+          <p className="mt-5 rounded-xl border border-red-800 bg-red-950 px-4 py-3 text-sm text-red-200">
             {message}
           </p>
         )}
