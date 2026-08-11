@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 
 import { getCurrentProfile } from "@/lib/currentProfile";
 import { createClient } from "@/lib/supabase/server";
@@ -84,8 +84,8 @@ export default async function BoilersPage() {
   const profile = await getCurrentProfile();
 
   if (!profile?.tenant_id) {
-    notFound();
-  }
+  redirect("/login?next=/boilers");
+}
 
   const { data: boilerData, error: boilersError } =
     await supabase

@@ -1,14 +1,14 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/currentProfile";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 
 export default async function UsersPage() {
   const supabase = await createClient();
   const profile = await getCurrentProfile();
 
   if (!profile?.tenant_id) {
-    notFound();
-  }
+  redirect("/login?next=/users");
+}
 
   const { data: users, error } = await supabase
     .from("profiles")

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { redirect } from "next/navigation";
 
 import { getCurrentProfile } from "@/lib/currentProfile";
 import { createClient } from "@/lib/supabase/server";
@@ -9,7 +9,8 @@ function formatCustomerType(customerType: string) {
     .split("_")
     .map(
       (word) =>
-        word.charAt(0).toUpperCase() + word.slice(1)
+        word.charAt(0).toUpperCase() +
+        word.slice(1)
     )
     .join(" ");
 }
@@ -19,43 +20,48 @@ export default async function CustomersPage() {
   const profile = await getCurrentProfile();
 
   if (!profile?.tenant_id) {
-    notFound();
+    redirect("/login?next=/customers");
   }
 
-  const { data: customers, error } = await supabase
-    .from("customers")
-    .select(`
-      id,
-      name,
-      customer_type,
-      contact_name,
-      email,
-      phone,
-      city,
-      state,
-      is_active,
-      created_at
-    `)
-    .eq("tenant_id", profile.tenant_id)
-    .order("name", { ascending: true });
+  const { data: customers, error } =
+    await supabase
+      .from("customers")
+      .select(`
+        id,
+        name,
+        customer_type,
+        contact_name,
+        email,
+        phone,
+        city,
+        state,
+        is_active,
+        created_at
+      `)
+      .eq("tenant_id", profile.tenant_id)
+      .order("name", { ascending: true });
 
   if (error) {
-    console.error("Unable to load customers:", error);
+    console.error(
+      "Unable to load customers:",
+      error
+    );
   }
 
   const customerList = customers ?? [];
 
   return (
-    <main className="p-6 md:p-10">
-      <div className="mx-auto max-w-7xl">
-        <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+    <main className="min-h-screen bg-slate-50">
+      <div className="mx-auto max-w-7xl px-6 py-10">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-4xl font-black text-slate-900">
+            <h1 className="text-3xl font-black text-slate-900">
               Customers
             </h1>
 
             <p className="mt-2 text-slate-600">
-              Manage building owners, property managers, and organizations.
+              Manage building owners, property
+              managers, and organizations.
             </p>
           </div>
 
@@ -88,7 +94,9 @@ export default async function CustomersPage() {
               </h3>
 
               <p className="mt-3 text-slate-600">
-                Add your first customer to begin managing properties and boiler compliance.
+                Add your first customer to begin
+                managing properties and boiler
+                compliance.
               </p>
 
               <Link
