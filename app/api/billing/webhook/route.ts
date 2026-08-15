@@ -46,7 +46,11 @@ function getPlanFromPriceId(
 }
 
 function getCustomerId(
-  customer: string | Stripe.Customer | Stripe.DeletedCustomer | null
+  customer:
+    | string
+    | Stripe.Customer
+    | Stripe.DeletedCustomer
+    | null
 ) {
   if (!customer) {
     return null;
@@ -64,11 +68,6 @@ async function updateTenantFromSubscription(
     subscription.customer
   );
 
-  /*
-   * Prefer tenant_id stored on the subscription.
-   * If metadata is ever missing, fall back to the
-   * Stripe customer already connected to a tenant.
-   */
   let tenantId =
     subscription.metadata.tenant_id || null;
 
@@ -109,11 +108,6 @@ async function updateTenantFromSubscription(
   const priceId =
     subscriptionItem?.price?.id ?? null;
 
-  /*
-   * Price ID is the source of truth for the plan.
-   * Subscription metadata may contain an old plan
-   * after an upgrade or downgrade.
-   */
   const plan =
     getPlanFromPriceId(priceId);
 
@@ -275,12 +269,6 @@ export async function POST(
 
   try {
     switch (event.type) {
-      /*
-       * Checkout creates the initial connection.
-       * We save the Stripe IDs here, but the
-       * subscription event remains the authority
-       * for plan and subscription status.
-       */
       case "checkout.session.completed": {
         const session =
           event.data
@@ -329,10 +317,6 @@ export async function POST(
           );
         }
 
-        /*
-         * Sync immediately instead of waiting
-         * for event ordering.
-         */
         if (subscriptionId) {
           const subscription =
             await stripe.subscriptions.retrieve(
@@ -347,10 +331,6 @@ export async function POST(
         break;
       }
 
-      /*
-       * These are the main subscription lifecycle
-       * events.
-       */
       case "customer.subscription.created":
       case "customer.subscription.updated":
       case "customer.subscription.deleted": {
@@ -365,12 +345,18 @@ export async function POST(
         break;
       }
 
-      /*
-       * A successful invoice may follow a renewal,
-       * retry, plan change, or payment recovery.
-       * Pull the subscription directly from Stripe
-       * so Supabase receives the current truth.
-       */
+      case "customer.subscription.trial_will_end": {
+        const subscription =
+          event.data
+            .object as Stripe.Subscription;
+
+        await updateTenantFromSubscription(
+          subscription
+        );
+
+        break;
+      }
+
       case "invoice.paid": {
         const invoice =
           event.data
@@ -390,11 +376,6 @@ export async function POST(
         break;
       }
 
-      /*
-       * Same idea on payment failure:
-       * retrieve the current subscription from
-       * Stripe instead of guessing its status.
-       */
       case "invoice.payment_failed": {
         const invoice =
           event.data
@@ -414,10 +395,30 @@ export async function POST(
         break;
       }
 
-      default:
+      case "invoice.payment_action_required": {
+        const invoice =
+          event.data
+            .object as Stripe.Invoice;
+
+        const customerId =
+          getCustomerId(
+            invoice.customer
+          );
+
+        if (customerId) {
+          await syncSubscriptionForCustomer(
+            customerId
+          );
+        }
+
+        break;
+      }
+
+      default: {
         console.log(
           `Unhandled Stripe event: ${event.type}`
         );
+      }
     }
 
     return NextResponse.json({

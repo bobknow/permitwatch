@@ -1,7 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import {
+  FormEvent,
+  Suspense,
+  useState,
+} from "react";
+import { useSearchParams } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/client";
 
@@ -24,17 +29,79 @@ const allowedCompanyTypes = [
   },
 ];
 
-export default function SignupPage() {
+const allowedPlans = [
+  "starter",
+  "growth",
+  "professional",
+] as const;
+
+type Plan = (typeof allowedPlans)[number];
+
+const planDetails: Record<
+  Plan,
+  {
+    name: string;
+    price: string;
+  }
+> = {
+  starter: {
+    name: "Starter",
+    price: "$99/month",
+  },
+  growth: {
+    name: "Growth",
+    price: "$199/month",
+  },
+  professional: {
+    name: "Professional",
+    price: "$499/month",
+  },
+};
+
+function getPlan(value: string | null): Plan | null {
+  if (
+    value &&
+    allowedPlans.includes(value as Plan)
+  ) {
+    return value as Plan;
+  }
+
+  return null;
+}
+
+function SignupForm() {
+  const searchParams = useSearchParams();
+
+  const selectedPlan = getPlan(
+    searchParams.get("plan")
+  );
+
   const [fullName, setFullName] = useState("");
-  const [companyName, setCompanyName] = useState("");
-  const [companyType, setCompanyType] = useState("");
+  const [companyName, setCompanyName] =
+    useState("");
+  const [companyType, setCompanyType] =
+    useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [password, setPassword] =
+    useState("");
+  const [confirmPassword, setConfirmPassword] =
+    useState("");
 
   const [message, setMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [isLoading, setIsLoading] =
+    useState(false);
+  const [isSuccess, setIsSuccess] =
+    useState(false);
+
+  const onboardingPath = selectedPlan
+    ? `/onboarding?plan=${selectedPlan}`
+    : "/onboarding";
+
+  const loginHref = selectedPlan
+    ? `/login?next=${encodeURIComponent(
+        onboardingPath
+      )}`
+    : "/login";
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>
@@ -46,8 +113,11 @@ export default function SignupPage() {
     setIsSuccess(false);
 
     const trimmedFullName = fullName.trim();
-    const trimmedCompanyName = companyName.trim();
-    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedCompanyName =
+      companyName.trim();
+    const trimmedEmail = email
+      .trim()
+      .toLowerCase();
 
     if (
       !trimmedFullName ||
@@ -57,7 +127,9 @@ export default function SignupPage() {
       !password ||
       !confirmPassword
     ) {
-      setMessage("Complete all required fields.");
+      setMessage(
+        "Complete all required fields."
+      );
       setIsLoading(false);
       return;
     }
@@ -79,16 +151,30 @@ export default function SignupPage() {
     try {
       const supabase = createClient();
 
+      const callbackUrl = new URL(
+        "/auth/callback",
+        window.location.origin
+      );
+
+      callbackUrl.searchParams.set(
+        "next",
+        onboardingPath
+      );
+
       const { data, error } =
         await supabase.auth.signUp({
           email: trimmedEmail,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            emailRedirectTo:
+              callbackUrl.toString(),
             data: {
               full_name: trimmedFullName,
-              company_name: trimmedCompanyName,
+              company_name:
+                trimmedCompanyName,
               company_type: companyType,
+              selected_plan:
+                selectedPlan ?? null,
             },
           },
         });
@@ -100,12 +186,15 @@ export default function SignupPage() {
       setIsSuccess(true);
 
       if (data.session) {
-        window.location.href = "/onboarding";
+        window.location.href =
+          onboardingPath;
         return;
       }
 
       setMessage(
-        "Account created. Check your email to verify your address, then sign in to PermitWatch."
+        selectedPlan
+          ? `Account created. Check your email to verify your address. After verification, we'll continue setting up your ${planDetails[selectedPlan].name} plan.`
+          : "Account created. Check your email to verify your address and continue setting up PermitWatch."
       );
     } catch (error) {
       setMessage(
@@ -122,18 +211,45 @@ export default function SignupPage() {
     <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 py-12 text-white">
       <section className="w-full max-w-lg rounded-2xl border border-slate-800 bg-slate-900 p-8 shadow-2xl">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-400">
+          <Link
+            href="/"
+            className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-400"
+          >
             PermitWatch
-          </p>
+          </Link>
 
           <h1 className="mt-3 text-3xl font-black text-white">
             Create your account
           </h1>
 
           <p className="mt-3 text-sm leading-6 text-slate-400">
-            Set up your organization and start tracking
-            boiler permits.
+            Set up your organization and start
+            tracking boiler permits.
           </p>
+
+          {selectedPlan && (
+            <div className="mt-5 flex items-center justify-between rounded-xl border border-emerald-800 bg-emerald-950/40 px-4 py-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-emerald-400">
+                  Selected plan
+                </p>
+
+                <p className="mt-1 font-bold text-white">
+                  {
+                    planDetails[selectedPlan]
+                      .name
+                  }
+                </p>
+              </div>
+
+              <p className="font-bold text-emerald-300">
+                {
+                  planDetails[selectedPlan]
+                    .price
+                }
+              </p>
+            </div>
+          )}
         </div>
 
         <form
@@ -153,7 +269,9 @@ export default function SignupPage() {
               type="text"
               value={fullName}
               onChange={(event) =>
-                setFullName(event.target.value)
+                setFullName(
+                  event.target.value
+                )
               }
               required
               autoComplete="name"
@@ -175,7 +293,9 @@ export default function SignupPage() {
               type="text"
               value={companyName}
               onChange={(event) =>
-                setCompanyName(event.target.value)
+                setCompanyName(
+                  event.target.value
+                )
               }
               required
               autoComplete="organization"
@@ -196,7 +316,9 @@ export default function SignupPage() {
               id="company_type"
               value={companyType}
               onChange={(event) =>
-                setCompanyType(event.target.value)
+                setCompanyType(
+                  event.target.value
+                )
               }
               required
               className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition focus:border-emerald-500"
@@ -205,14 +327,16 @@ export default function SignupPage() {
                 Select company type
               </option>
 
-              {allowedCompanyTypes.map((type) => (
-                <option
-                  key={type.value}
-                  value={type.value}
-                >
-                  {type.label}
-                </option>
-              ))}
+              {allowedCompanyTypes.map(
+                (type) => (
+                  <option
+                    key={type.value}
+                    value={type.value}
+                  >
+                    {type.label}
+                  </option>
+                )
+              )}
             </select>
           </div>
 
@@ -251,7 +375,9 @@ export default function SignupPage() {
               type="password"
               value={password}
               onChange={(event) =>
-                setPassword(event.target.value)
+                setPassword(
+                  event.target.value
+                )
               }
               required
               minLength={8}
@@ -274,7 +400,9 @@ export default function SignupPage() {
               type="password"
               value={confirmPassword}
               onChange={(event) =>
-                setConfirmPassword(event.target.value)
+                setConfirmPassword(
+                  event.target.value
+                )
               }
               required
               minLength={8}
@@ -286,14 +414,18 @@ export default function SignupPage() {
 
           <button
             type="submit"
-            disabled={isLoading || isSuccess}
+            disabled={
+              isLoading || isSuccess
+            }
             className="w-full rounded-xl bg-emerald-600 px-4 py-3 font-bold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isLoading
               ? "Creating account..."
               : isSuccess
                 ? "Account created"
-                : "Create Account"}
+                : selectedPlan
+                  ? `Continue with ${planDetails[selectedPlan].name}`
+                  : "Create Account"}
           </button>
         </form>
 
@@ -312,7 +444,7 @@ export default function SignupPage() {
         <p className="mt-6 text-center text-sm text-slate-400">
           Already have an account?{" "}
           <Link
-            href="/login"
+            href={loginHref}
             className="font-semibold text-emerald-400 hover:text-emerald-300"
           >
             Sign in
@@ -320,5 +452,21 @@ export default function SignupPage() {
         </p>
       </section>
     </main>
+  );
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 py-12">
+          <div className="text-sm text-slate-400">
+            Loading PermitWatch...
+          </div>
+        </main>
+      }
+    >
+      <SignupForm />
+    </Suspense>
   );
 }

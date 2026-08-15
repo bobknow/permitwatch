@@ -67,7 +67,7 @@ export async function GET(request: Request) {
 
       loginUrl.searchParams.set(
         "next",
-        `/pricing`
+        `/onboarding?plan=${planName}`
       );
 
       return NextResponse.redirect(loginUrl);
