@@ -12,11 +12,11 @@ import { createClient } from "@/lib/supabase/client";
 
 function getSafeNextPath(value: string | null) {
   if (!value) {
-    return "/dashboard";
+    return "/onboarding";
   }
 
   if (!value.startsWith("/") || value.startsWith("//")) {
-    return "/dashboard";
+    return "/onboarding";
   }
 
   return value;
