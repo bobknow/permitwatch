@@ -263,11 +263,11 @@ export default async function SettingsPage() {
   )}
 
   <Link
-    href="/pricing"
-    className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-3 font-semibold text-slate-700 transition hover:bg-slate-100"
-  >
-    View Plans
-  </Link>
+  href="/pricing"
+  className="inline-flex items-center justify-center rounded-lg border border-emerald-600 bg-emerald-600 px-5 py-3 font-semibold text-white transition hover:border-emerald-500 hover:bg-emerald-500"
+>
+  View Plans
+</Link>
 </div>
           </div>
 
