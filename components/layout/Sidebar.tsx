@@ -43,7 +43,7 @@ function Navigation({
   return (
     <>
       <Link
-        href="/dashboard"
+        href="/"
         onClick={onNavigate}
         className="group"
       >

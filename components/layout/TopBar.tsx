@@ -133,7 +133,7 @@ export default async function TopBar() {
   return (
     <header className="flex min-h-20 items-center justify-between gap-2 border-b border-slate-800 bg-slate-950 py-4 pl-16 pr-4 sm:gap-4 sm:px-6">
   <Link
-    href="/dashboard"
+    href="/"
     className="group min-w-0"
   >
     <h2 className="truncate text-lg font-black text-white transition group-hover:text-emerald-400 sm:text-xl">
