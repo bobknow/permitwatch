@@ -15,7 +15,10 @@ function getSafeNextPath(value: string | null) {
     return "/onboarding";
   }
 
-  if (!value.startsWith("/") || value.startsWith("//")) {
+  if (
+    !value.startsWith("/") ||
+    value.startsWith("//")
+  ) {
     return "/onboarding";
   }
 
@@ -30,11 +33,19 @@ function LoginForm() {
   );
 
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [password, setPassword] =
+    useState("");
+  const [showPassword, setShowPassword] =
+    useState(false);
 
-  async function handleSubmit(event: FormEvent) {
+  const [message, setMessage] =
+    useState("");
+  const [isLoading, setIsLoading] =
+    useState(false);
+
+  async function handleSubmit(
+    event: FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault();
 
     setIsLoading(true);
@@ -44,10 +55,14 @@ function LoginForm() {
       const supabase = createClient();
 
       const { error } =
-        await supabase.auth.signInWithPassword({
-          email: email.trim().toLowerCase(),
-          password,
-        });
+        await supabase.auth.signInWithPassword(
+          {
+            email: email
+              .trim()
+              .toLowerCase(),
+            password,
+          }
+        );
 
       if (error) {
         throw error;
@@ -81,8 +96,8 @@ function LoginForm() {
           </h1>
 
           <p className="mt-3 text-sm leading-6 text-slate-400">
-            Enter your email and password to access
-            PermitWatch.
+            Enter your email and password to
+            access PermitWatch.
           </p>
         </div>
 
@@ -103,7 +118,9 @@ function LoginForm() {
               type="email"
               value={email}
               onChange={(event) =>
-                setEmail(event.target.value)
+                setEmail(
+                  event.target.value
+                )
               }
               required
               autoComplete="email"
@@ -129,18 +146,45 @@ function LoginForm() {
               </Link>
             </div>
 
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(event) =>
-                setPassword(event.target.value)
-              }
-              required
-              autoComplete="current-password"
-              placeholder="Enter your password"
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500"
-            />
+            <div className="relative">
+              <input
+                id="password"
+                type={
+                  showPassword
+                    ? "text"
+                    : "password"
+                }
+                value={password}
+                onChange={(event) =>
+                  setPassword(
+                    event.target.value
+                  )
+                }
+                required
+                autoComplete="current-password"
+                placeholder="Enter your password"
+                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 pr-20 text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500"
+              />
+
+              <button
+                type="button"
+                onClick={() =>
+                  setShowPassword(
+                    (current) => !current
+                  )
+                }
+                aria-label={
+                  showPassword
+                    ? "Hide password"
+                    : "Show password"
+                }
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-emerald-400 transition hover:text-emerald-300"
+              >
+                {showPassword
+                  ? "Hide"
+                  : "Show"}
+              </button>
+            </div>
           </div>
 
           <button

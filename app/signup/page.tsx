@@ -58,7 +58,9 @@ const planDetails: Record<
   },
 };
 
-function getPlan(value: string | null): Plan | null {
+function getPlan(
+  value: string | null
+): Plan | null {
   if (
     value &&
     allowedPlans.includes(value as Plan)
@@ -76,18 +78,28 @@ function SignupForm() {
     searchParams.get("plan")
   );
 
-  const [fullName, setFullName] = useState("");
+  const [fullName, setFullName] =
+    useState("");
   const [companyName, setCompanyName] =
     useState("");
   const [companyType, setCompanyType] =
     useState("");
   const [email, setEmail] = useState("");
+
   const [password, setPassword] =
     useState("");
   const [confirmPassword, setConfirmPassword] =
     useState("");
 
-  const [message, setMessage] = useState("");
+  const [showPassword, setShowPassword] =
+    useState(false);
+  const [
+    showConfirmPassword,
+    setShowConfirmPassword,
+  ] = useState(false);
+
+  const [message, setMessage] =
+    useState("");
   const [isLoading, setIsLoading] =
     useState(false);
   const [isSuccess, setIsSuccess] =
@@ -112,9 +124,12 @@ function SignupForm() {
     setMessage("");
     setIsSuccess(false);
 
-    const trimmedFullName = fullName.trim();
+    const trimmedFullName =
+      fullName.trim();
+
     const trimmedCompanyName =
       companyName.trim();
+
     const trimmedEmail = email
       .trim()
       .toLowerCase();
@@ -143,7 +158,9 @@ function SignupForm() {
     }
 
     if (password !== confirmPassword) {
-      setMessage("Passwords do not match.");
+      setMessage(
+        "Passwords do not match."
+      );
       setIsLoading(false);
       return;
     }
@@ -169,10 +186,12 @@ function SignupForm() {
             emailRedirectTo:
               callbackUrl.toString(),
             data: {
-              full_name: trimmedFullName,
+              full_name:
+                trimmedFullName,
               company_name:
                 trimmedCompanyName,
-              company_type: companyType,
+              company_type:
+                companyType,
               selected_plan:
                 selectedPlan ?? null,
             },
@@ -236,16 +255,18 @@ function SignupForm() {
 
                 <p className="mt-1 font-bold text-white">
                   {
-                    planDetails[selectedPlan]
-                      .name
+                    planDetails[
+                      selectedPlan
+                    ].name
                   }
                 </p>
               </div>
 
               <p className="font-bold text-emerald-300">
                 {
-                  planDetails[selectedPlan]
-                    .price
+                  planDetails[
+                    selectedPlan
+                  ].price
                 }
               </p>
             </div>
@@ -353,7 +374,9 @@ function SignupForm() {
               type="email"
               value={email}
               onChange={(event) =>
-                setEmail(event.target.value)
+                setEmail(
+                  event.target.value
+                )
               }
               required
               autoComplete="email"
@@ -370,21 +393,46 @@ function SignupForm() {
               Password
             </label>
 
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(event) =>
-                setPassword(
-                  event.target.value
-                )
-              }
-              required
-              minLength={8}
-              autoComplete="new-password"
-              placeholder="At least 8 characters"
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500"
-            />
+            <div className="relative">
+              <input
+                id="password"
+                type={
+                  showPassword
+                    ? "text"
+                    : "password"
+                }
+                value={password}
+                onChange={(event) =>
+                  setPassword(
+                    event.target.value
+                  )
+                }
+                required
+                minLength={8}
+                autoComplete="new-password"
+                placeholder="At least 8 characters"
+                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 pr-20 text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500"
+              />
+
+              <button
+                type="button"
+                onClick={() =>
+                  setShowPassword(
+                    (current) => !current
+                  )
+                }
+                aria-label={
+                  showPassword
+                    ? "Hide password"
+                    : "Show password"
+                }
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-emerald-400 transition hover:text-emerald-300"
+              >
+                {showPassword
+                  ? "Hide"
+                  : "Show"}
+              </button>
+            </div>
           </div>
 
           <div>
@@ -395,21 +443,46 @@ function SignupForm() {
               Confirm password
             </label>
 
-            <input
-              id="confirm_password"
-              type="password"
-              value={confirmPassword}
-              onChange={(event) =>
-                setConfirmPassword(
-                  event.target.value
-                )
-              }
-              required
-              minLength={8}
-              autoComplete="new-password"
-              placeholder="Re-enter your password"
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500"
-            />
+            <div className="relative">
+              <input
+                id="confirm_password"
+                type={
+                  showConfirmPassword
+                    ? "text"
+                    : "password"
+                }
+                value={confirmPassword}
+                onChange={(event) =>
+                  setConfirmPassword(
+                    event.target.value
+                  )
+                }
+                required
+                minLength={8}
+                autoComplete="new-password"
+                placeholder="Re-enter your password"
+                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 pr-20 text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500"
+              />
+
+              <button
+                type="button"
+                onClick={() =>
+                  setShowConfirmPassword(
+                    (current) => !current
+                  )
+                }
+                aria-label={
+                  showConfirmPassword
+                    ? "Hide confirmed password"
+                    : "Show confirmed password"
+                }
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-emerald-400 transition hover:text-emerald-300"
+              >
+                {showConfirmPassword
+                  ? "Hide"
+                  : "Show"}
+              </button>
+            </div>
           </div>
 
           <button

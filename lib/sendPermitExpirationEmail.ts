@@ -90,6 +90,7 @@ export async function sendPermitExpirationEmail({
   const { data, error } =
     await resend.emails.send({
       from: "PermitWatch Notifications <notifications@getpermitwatch.com>",
+      replyTo: "support@getpermitwatch.com",
       to,
       subject,
       html: `

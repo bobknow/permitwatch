@@ -9,9 +9,19 @@ export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] =
     useState("");
+
+  const [showPassword, setShowPassword] =
+    useState(false);
+  const [
+    showConfirmPassword,
+    setShowConfirmPassword,
+  ] = useState(false);
+
   const [message, setMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [isLoading, setIsLoading] =
+    useState(false);
+  const [isSuccess, setIsSuccess] =
+    useState(false);
 
   async function handleSubmit(
     event: FormEvent<HTMLFormElement>
@@ -23,7 +33,9 @@ export default function ResetPasswordPage() {
     setIsSuccess(false);
 
     if (!password || !confirmPassword) {
-      setMessage("Enter and confirm your new password.");
+      setMessage(
+        "Enter and confirm your new password."
+      );
       setIsLoading(false);
       return;
     }
@@ -55,6 +67,7 @@ export default function ResetPasswordPage() {
       }
 
       setIsSuccess(true);
+
       setMessage(
         "Your password has been updated. You can now sign in with your new password."
       );
@@ -85,8 +98,8 @@ export default function ResetPasswordPage() {
           </h1>
 
           <p className="mt-3 text-sm leading-6 text-slate-400">
-            Enter a new password for your PermitWatch
-            account.
+            Enter a new password for your
+            PermitWatch account.
           </p>
         </div>
 
@@ -103,19 +116,46 @@ export default function ResetPasswordPage() {
                 New password
               </label>
 
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(event) =>
-                  setPassword(event.target.value)
-                }
-                required
-                minLength={8}
-                autoComplete="new-password"
-                placeholder="At least 8 characters"
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500"
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  type={
+                    showPassword
+                      ? "text"
+                      : "password"
+                  }
+                  value={password}
+                  onChange={(event) =>
+                    setPassword(
+                      event.target.value
+                    )
+                  }
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                  placeholder="At least 8 characters"
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 pr-20 text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500"
+                />
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowPassword(
+                      (current) => !current
+                    )
+                  }
+                  aria-label={
+                    showPassword
+                      ? "Hide password"
+                      : "Show password"
+                  }
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-emerald-400 transition hover:text-emerald-300"
+                >
+                  {showPassword
+                    ? "Hide"
+                    : "Show"}
+                </button>
+              </div>
             </div>
 
             <div>
@@ -126,21 +166,46 @@ export default function ResetPasswordPage() {
                 Confirm new password
               </label>
 
-              <input
-                id="confirm_password"
-                type="password"
-                value={confirmPassword}
-                onChange={(event) =>
-                  setConfirmPassword(
-                    event.target.value
-                  )
-                }
-                required
-                minLength={8}
-                autoComplete="new-password"
-                placeholder="Re-enter your new password"
-                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500"
-              />
+              <div className="relative">
+                <input
+                  id="confirm_password"
+                  type={
+                    showConfirmPassword
+                      ? "text"
+                      : "password"
+                  }
+                  value={confirmPassword}
+                  onChange={(event) =>
+                    setConfirmPassword(
+                      event.target.value
+                    )
+                  }
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                  placeholder="Re-enter your new password"
+                  className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 pr-20 text-white outline-none transition placeholder:text-slate-600 focus:border-emerald-500"
+                />
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowConfirmPassword(
+                      (current) => !current
+                    )
+                  }
+                  aria-label={
+                    showConfirmPassword
+                      ? "Hide confirmed password"
+                      : "Show confirmed password"
+                  }
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold text-emerald-400 transition hover:text-emerald-300"
+                >
+                  {showConfirmPassword
+                    ? "Hide"
+                    : "Show"}
+                </button>
+              </div>
             </div>
 
             <button
