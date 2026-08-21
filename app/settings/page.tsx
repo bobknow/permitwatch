@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { getCurrentProfile } from "@/lib/currentProfile";
 import { createClient } from "@/lib/supabase/server";
 
+import LogoutButton from "@/components/LogoutButton";
+
 const planDetails = {
   starter: {
     name: "Starter",
@@ -492,6 +494,24 @@ export default async function SettingsPage() {
               />
             </div>
           </section>
+
+          <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+            <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+             <div>
+                 <h2 className="text-2xl font-black text-slate-900">
+                     Account Actions
+                </h2>
+
+              <p className="mt-2 text-slate-600">
+             Sign out of your PermitWatch account on this device.
+            </p>
+          </div>
+
+            <div className="shrink-0">
+             <LogoutButton />
+              </div>
+           </div>
+         </section>
 
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8 lg:col-span-2">
             <h2 className="text-2xl font-black text-slate-900">
