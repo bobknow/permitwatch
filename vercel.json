@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/permit-reminders",
+      "schedule": "0 15 * * *"
+    }
+  ]
+}
