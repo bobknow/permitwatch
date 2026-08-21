@@ -52,16 +52,44 @@ export default async function OnboardingPage({
 
     redirect("/signup?error=provisioning_failed");
   }
+const { data: tenant, error: tenantError } =
+  await supabase
+    .from("tenants")
+    .select(`
+      subscription_status,
+      stripe_subscription_id
+    `)
+    .eq("id", profile.tenant_id)
+    .single();
 
-  const params = await searchParams;
+if (tenantError) {
+  console.error(
+    "Unable to load onboarding subscription:",
+    tenantError
+  );
+}
 
-  const selectedPlan = getPlan(params.plan);
+const params = await searchParams;
 
-  if (selectedPlan) {
-    redirect(
-      `/api/billing/checkout?plan=${selectedPlan}`
-    );
-  }
+const selectedPlan = getPlan(params.plan);
+
+/*
+ * Existing paid subscribers should not be sent
+ * back through onboarding when simply signing in.
+ */
+const hasActiveSubscription =
+  tenant?.subscription_status === "active" ||
+  tenant?.subscription_status === "trialing";
+
+if (hasActiveSubscription && !selectedPlan) {
+  redirect("/dashboard");
+}
+
+if (selectedPlan) {
+  redirect(
+    `/api/billing/checkout?plan=${selectedPlan}`
+  );
+}
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-950 px-6 py-12">
