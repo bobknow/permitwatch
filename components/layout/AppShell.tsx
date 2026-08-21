@@ -7,20 +7,16 @@ export default function AppShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-screen bg-slate-950 text-white">
-
+    <div className="min-h-screen bg-slate-950 text-white md:flex">
       <Sidebar />
 
-      <div className="flex flex-1 flex-col">
-
+      <div className="min-w-0 flex-1">
         <TopBar />
 
-        <main className="flex-1 p-8">
+        <main className="min-w-0 flex-1 p-4 sm:p-6 md:p-8">
           {children}
         </main>
-
       </div>
-
     </div>
   );
 }
