@@ -513,24 +513,24 @@ export default async function SettingsPage() {
            </div>
          </section>
 
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8 lg:col-span-2">
-            <h2 className="text-2xl font-black text-slate-900">
-              Organization ID
-            </h2>
+          <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+  <h2 className="text-2xl font-black text-slate-900">
+    Contact PermitWatch
+  </h2>
 
-            <p className="mt-2 text-slate-600">
-              This identifier connects your users,
-              properties, boilers, permits, and
-              subscription to the same PermitWatch
-              organization.
-            </p>
+  <p className="mt-2 text-slate-600">
+    Questions about PermitWatch, your account, or general inquiries.
+  </p>
 
-            <div className="mt-5 overflow-x-auto rounded-xl bg-slate-50 p-4">
-              <code className="text-sm font-semibold text-slate-900">
-                {profile.tenant_id}
-              </code>
-            </div>
-          </section>
+  <div className="mt-5">
+    <a
+      href="mailto:info@getpermitwatch.com"
+      className="font-semibold text-emerald-700 transition hover:text-emerald-600"
+    >
+      info@getpermitwatch.com
+    </a>
+  </div>
+</section>
         </div>
       </div>
     </main>
