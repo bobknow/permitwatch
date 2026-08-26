@@ -39,7 +39,7 @@ function getDaysRemaining(date: string | null) {
 
   return Math.ceil(
     (expiration.getTime() - todayStart.getTime()) /
-      86_400_000
+    86_400_000
   );
 }
 
@@ -138,33 +138,33 @@ export default async function PermitsPage() {
   }
 
   const allPermits: PermitRow[] = (data ?? []).map((row) => {
-  const boiler = Array.isArray(row.boiler)
-    ? row.boiler[0] ?? null
-    : row.boiler;
+    const boiler = Array.isArray(row.boiler)
+      ? row.boiler[0] ?? null
+      : row.boiler;
 
-  const property = boiler
-    ? Array.isArray(boiler.property)
-      ? boiler.property[0] ?? null
-      : boiler.property
-    : null;
+    const property = boiler
+      ? Array.isArray(boiler.property)
+        ? boiler.property[0] ?? null
+        : boiler.property
+      : null;
 
-  return {
-    id: row.id,
-    permit_number: row.permit_number,
-    issued_date: row.issued_date,
-    expiration_date: row.expiration_date,
-    ocr_status: row.ocr_status,
-    status: row.status,
-    created_at: row.created_at,
-    boiler: boiler
-      ? {
+    return {
+      id: row.id,
+      permit_number: row.permit_number,
+      issued_date: row.issued_date,
+      expiration_date: row.expiration_date,
+      ocr_status: row.ocr_status,
+      status: row.status,
+      created_at: row.created_at,
+      boiler: boiler
+        ? {
           id: boiler.id,
           boiler_number: boiler.boiler_number,
           property,
         }
-      : null,
-  };
-});
+        : null,
+    };
+  });
 
   /*
    * Only show the newest permit for each boiler.
@@ -223,18 +223,27 @@ export default async function PermitsPage() {
   return (
     <main className="min-h-screen bg-slate-100 p-6 md:p-10">
       <div className="mx-auto max-w-7xl">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
-            Compliance Records
-          </p>
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
+              Compliance Records
+            </p>
 
-          <h1 className="mt-2 text-4xl font-black text-slate-900">
-            Permits
-          </h1>
+            <h1 className="mt-2 text-4xl font-black text-slate-900">
+              Permits
+            </h1>
 
-          <p className="mt-2 text-slate-600">
-            Review current boiler permits and compliance status.
-          </p>
+            <p className="mt-2 text-slate-600">
+              Review current boiler permits and compliance status.
+            </p>
+          </div>
+
+          <Link
+            href="/permits/import"
+            className="inline-flex w-fit items-center justify-center rounded-xl bg-emerald-600 px-5 py-3 font-bold text-white transition hover:bg-emerald-500"
+          >
+            Upload Permit
+          </Link>
         </div>
 
         <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
@@ -366,15 +375,25 @@ export default async function PermitsPage() {
               </h2>
 
               <p className="mt-2 text-slate-600">
-                Upload a permit from a boiler record to begin tracking compliance.
+                Upload your first permit and let PermitWatch read the property,
+                boiler, and compliance information for you.
               </p>
 
-              <Link
-                href="/properties"
-                className="mt-6 inline-flex rounded-lg bg-slate-900 px-5 py-3 font-semibold text-white transition hover:bg-slate-700"
-              >
-                View Properties
-              </Link>
+              <div className="mt-6 flex flex-wrap justify-center gap-3">
+                <Link
+                  href="/permits/import"
+                  className="inline-flex rounded-lg bg-emerald-600 px-5 py-3 font-semibold text-white transition hover:bg-emerald-500"
+                >
+                  Upload Permit
+                </Link>
+
+                <Link
+                  href="/properties"
+                  className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-slate-900 px-5 py-3 font-semibold text-white transition hover:bg-slate-700"
+                >
+                  View Properties
+                </Link>
+              </div>
             </div>
           )}
         </section>
@@ -391,10 +410,10 @@ function SummaryCard({
   label: string;
   value: number;
   tone?:
-    | "default"
-    | "success"
-    | "warning"
-    | "danger";
+  | "default"
+  | "success"
+  | "warning"
+  | "danger";
 }) {
   const valueClasses =
     tone === "success"

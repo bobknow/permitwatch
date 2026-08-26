@@ -45,8 +45,8 @@ export default async function BoilerPage({
   }
 
   const { data: boiler, error: boilerError } = await supabase
-  .from("boilers")
-  .select(`
+    .from("boilers")
+    .select(`
     id,
     property_id,
     boiler_number,
@@ -133,21 +133,19 @@ export default async function BoilerPage({
 
     const daysRemaining = Math.ceil(
       (expirationDate.getTime() - todayStart.getTime()) /
-        (1000 * 60 * 60 * 24)
+      (1000 * 60 * 60 * 24)
     );
 
     if (daysRemaining < 0) {
       complianceLabel = "Expired";
       complianceColor = "bg-red-50 text-red-700";
-      complianceMessage = `${Math.abs(daysRemaining)} ${
-        Math.abs(daysRemaining) === 1 ? "day" : "days"
-      } overdue`;
+      complianceMessage = `${Math.abs(daysRemaining)} ${Math.abs(daysRemaining) === 1 ? "day" : "days"
+        } overdue`;
     } else if (daysRemaining <= 30) {
       complianceLabel = "Expiring Soon";
       complianceColor = "bg-amber-50 text-amber-700";
-      complianceMessage = `${daysRemaining} ${
-        daysRemaining === 1 ? "day" : "days"
-      } remaining`;
+      complianceMessage = `${daysRemaining} ${daysRemaining === 1 ? "day" : "days"
+        } remaining`;
     } else {
       complianceLabel = "Current";
       complianceColor = "bg-emerald-50 text-emerald-700";
@@ -201,38 +199,38 @@ export default async function BoilerPage({
           </div>
 
           <div className="mt-8 grid gap-5 md:grid-cols-3">
-  <div className="rounded-xl bg-slate-50 p-5">
-    <p className="text-sm font-medium text-slate-500">
-      Model Number
-    </p>
+            <div className="rounded-xl bg-slate-50 p-5">
+              <p className="text-sm font-medium text-slate-500">
+                Model Number
+              </p>
 
-    <p className="mt-2 text-lg font-bold text-slate-900">
-      {boiler.model_number || "Not provided"}
-    </p>
-  </div>
+              <p className="mt-2 text-lg font-bold text-slate-900">
+                {boiler.model_number || "Not provided"}
+              </p>
+            </div>
 
-  <div className="rounded-xl bg-slate-50 p-5">
-    <p className="text-sm font-medium text-slate-500">
-      Serial Number
-    </p>
+            <div className="rounded-xl bg-slate-50 p-5">
+              <p className="text-sm font-medium text-slate-500">
+                Serial Number
+              </p>
 
-    <p className="mt-2 text-lg font-bold text-slate-900">
-      {boiler.serial_number || "Not provided"}
-    </p>
-  </div>
+              <p className="mt-2 text-lg font-bold text-slate-900">
+                {boiler.serial_number || "Not provided"}
+              </p>
+            </div>
 
-  <div className="rounded-xl bg-slate-50 p-5">
-    <p className="text-sm font-medium text-slate-500">
-      Installation Address
-    </p>
+            <div className="rounded-xl bg-slate-50 p-5">
+              <p className="text-sm font-medium text-slate-500">
+                Installation Address
+              </p>
 
-    <p className="mt-2 text-lg font-bold text-slate-900">
-      {currentPermit?.installation_address ||
-        propertyAddress ||
-        "Not provided"}
-    </p>
-  </div>
-</div>
+              <p className="mt-2 text-lg font-bold text-slate-900">
+                {currentPermit?.installation_address ||
+                  propertyAddress ||
+                  "Not provided"}
+              </p>
+            </div>
+          </div>
           <div className="mt-6 border-t border-slate-200 pt-6">
             <DeleteBoilerButton
               boilerId={boiler.id}
@@ -240,7 +238,7 @@ export default async function BoilerPage({
             />
           </div>
         </section>
-                <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+        <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
           <div className="flex flex-col gap-4 border-b border-slate-200 pb-6 md:flex-row md:items-start md:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
@@ -367,14 +365,14 @@ export default async function BoilerPage({
                       href={`/api/permits/${currentPermit.id}/view`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                      className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500"
                     >
                       View PDF
                     </a>
 
                     <a
                       href={`/api/permits/${currentPermit.id}/download`}
-                      className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                      className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
                     >
                       Download
                     </a>
@@ -383,7 +381,7 @@ export default async function BoilerPage({
                       href={`/api/permits/${currentPermit.id}/view`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                      className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
                     >
                       Print
                     </a>

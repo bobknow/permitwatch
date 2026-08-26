@@ -16,6 +16,7 @@ const links = [
     href: "/notifications",
   },
   { name: "Users", href: "/users" },
+  { name: "Help", href: "/help" },
   { name: "Settings", href: "/settings" },
 ];
 
@@ -71,11 +72,10 @@ function Navigation({
               aria-current={
                 active ? "page" : undefined
               }
-              className={`block rounded-xl px-4 py-3 font-medium transition ${
-                active
+              className={`block rounded-xl px-4 py-3 font-medium transition ${active
                   ? "bg-emerald-600 text-white shadow-sm"
                   : "text-slate-300 hover:bg-slate-900 hover:text-emerald-400"
-              }`}
+                }`}
             >
               {link.name}
             </Link>
@@ -163,11 +163,10 @@ export default function Sidebar() {
 
       {/* Mobile drawer */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-[min(18rem,85vw)] flex-col border-r border-slate-800 bg-slate-950 px-5 pb-7 pt-20 shadow-2xl transition-transform duration-200 md:hidden ${
-          isOpen
+        className={`fixed inset-y-0 left-0 z-50 flex w-[min(18rem,85vw)] flex-col border-r border-slate-800 bg-slate-950 px-5 pb-7 pt-20 shadow-2xl transition-transform duration-200 md:hidden ${isOpen
             ? "translate-x-0"
             : "-translate-x-full"
-        }`}
+          }`}
       >
         <Navigation
           pathname={pathname}
