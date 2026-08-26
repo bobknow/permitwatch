@@ -66,13 +66,13 @@ export default async function PermitPage({
 
   const address = property
     ? [
-        property.address_line_1,
-        property.city,
-        property.state,
-        property.postal_code,
-      ]
-        .filter(Boolean)
-        .join(", ")
+      property.address_line_1,
+      property.city,
+      property.state,
+      property.postal_code,
+    ]
+      .filter(Boolean)
+      .join(", ")
     : "Unknown";
 
   return (
@@ -106,14 +106,14 @@ export default async function PermitPage({
 
             <Link
               href={`/properties/${property?.id}/boilers/${permit.boiler?.id}`}
-              className="rounded-lg border border-slate-300 bg-white px-5 py-3 font-semibold text-slate-700 hover:bg-slate-100"
+              className="rounded-lg bg-slate-900 px-5 py-3 font-semibold !text-white transition hover:bg-slate-700"
             >
               Boiler
             </Link>
 
             <Link
               href={`/properties/${property?.id}`}
-              className="rounded-lg bg-slate-900 px-5 py-3 font-semibold text-white hover:bg-slate-700"
+              className="rounded-lg bg-slate-900 px-5 py-3 font-semibold !text-white transition hover:bg-slate-700"
             >
               Property
             </Link>
@@ -261,7 +261,7 @@ export default async function PermitPage({
 
               <Link
                 href={`/properties/${property?.id}/boilers/${permit.boiler?.id}`}
-                className="rounded-lg bg-amber-500 px-4 py-2 font-semibold text-white transition hover:bg-amber-600"
+                className="rounded-lg bg-amber-500 px-4 py-2 font-semibold !text-white transition hover:bg-amber-600"
               >
                 Replace Permit
               </Link>
@@ -271,53 +271,53 @@ export default async function PermitPage({
           </div>
 
           {permit.storage_path ? (
-  <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-6">
-    <p className="font-semibold text-slate-900">
-      Original permit document
-    </p>
+            <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-6">
+              <p className="font-semibold text-slate-900">
+                Original permit document
+              </p>
 
-    <p className="mt-2 text-sm text-slate-600">
-      View, download, or print the uploaded permit.
-    </p>
+              <p className="mt-2 text-sm text-slate-600">
+                View, download, or print the uploaded permit.
+              </p>
 
-    <div className="mt-5 flex flex-wrap gap-3">
-      <a
-        href={`/api/permits/${permit.id}/view`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
-      >
-        View PDF
-      </a>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <a
+                  href={`/api/permits/${permit.id}/view`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
+                >
+                  View PDF
+                </a>
 
-      <a
-        href={`/api/permits/${permit.id}/download`}
-        className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
-      >
-        Download
-      </a>
+                <a
+                  href={`/api/permits/${permit.id}/download`}
+                  className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold !text-white transition hover:bg-slate-700"
+                >
+                  Download
+                </a>
 
-      <a
-        href={`/api/permits/${permit.id}/view`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
-      >
-        Print Original
-      </a>
-    </div>
-  </div>
-) : (
-  <div className="mt-6 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center">
-    <p className="font-semibold text-slate-900">
-      No document uploaded
-    </p>
+                <a
+                  href={`/api/permits/${permit.id}/view`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold !text-white transition hover:bg-slate-700"
+                >
+                  Print Original
+                </a>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-6 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-10 text-center">
+              <p className="font-semibold text-slate-900">
+                No document uploaded
+              </p>
 
-    <p className="mt-2 text-sm text-slate-600">
-      Upload a permit from the boiler page.
-    </p>
-  </div>
-)}
+              <p className="mt-2 text-sm text-slate-600">
+                Upload a permit from the boiler page.
+              </p>
+            </div>
+          )}
 
         </section>
 

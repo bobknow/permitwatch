@@ -163,7 +163,7 @@ export default async function SettingsPage() {
 
   const currentPlanKey =
     tenant.subscription_plan &&
-    tenant.subscription_plan in planDetails
+      tenant.subscription_plan in planDetails
       ? (tenant.subscription_plan as PlanName)
       : "starter";
 
@@ -194,7 +194,7 @@ export default async function SettingsPage() {
     Math.round(
       (propertyCount /
         currentPlan.propertyLimit) *
-        100
+      100
     )
   );
 
@@ -241,36 +241,36 @@ export default async function SettingsPage() {
             </div>
 
             <div className="flex flex-wrap gap-3">
-  {tenant.subscription_status === "canceled" ? (
-    <Link
-      href="/pricing"
-      className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-5 py-3 font-semibold text-white transition hover:bg-emerald-500"
-    >
-      Reactivate Subscription
-    </Link>
-  ) : hasBillingAccount ? (
-    <Link
-      href="/api/billing/portal"
-      className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-5 py-3 font-semibold text-white transition hover:bg-slate-700"
-    >
-      Manage Billing
-    </Link>
-  ) : (
-    <Link
-      href="/pricing"
-      className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-5 py-3 font-semibold text-white transition hover:bg-emerald-500"
-    >
-      Choose a Plan
-    </Link>
-  )}
+              {tenant.subscription_status === "canceled" ? (
+                <Link
+                  href="/pricing"
+                  className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-5 py-3 font-semibold text-white transition hover:bg-emerald-500"
+                >
+                  Reactivate Subscription
+                </Link>
+              ) : hasBillingAccount ? (
+                <Link
+                  href="/api/billing/portal"
+                  className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-5 py-3 font-semibold text-white transition hover:bg-slate-700"
+                >
+                  Manage Billing
+                </Link>
+              ) : (
+                <Link
+                  href="/pricing"
+                  className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-5 py-3 font-semibold text-white transition hover:bg-emerald-500"
+                >
+                  Choose a Plan
+                </Link>
+              )}
 
-  <Link
-  href="/pricing"
-  className="inline-flex items-center justify-center rounded-lg border border-emerald-600 bg-emerald-600 px-5 py-3 font-semibold text-white transition hover:border-emerald-500 hover:bg-emerald-500"
->
-  View Plans
-</Link>
-</div>
+              <Link
+                href="/pricing"
+                className="inline-flex items-center justify-center rounded-lg border border-emerald-600 bg-emerald-600 px-5 py-3 font-semibold text-white transition hover:border-emerald-500 hover:bg-emerald-500"
+              >
+                View Plans
+              </Link>
+            </div>
           </div>
 
           <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -327,36 +327,36 @@ export default async function SettingsPage() {
           </div>
 
           {tenant.subscription_status === "canceled" && (
-          <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-5">
-            <p className="text-lg font-bold text-red-800">
-              Your PermitWatch subscription has been canceled.
-             </p>
+            <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-5">
+              <p className="text-lg font-bold text-red-800">
+                Your PermitWatch subscription has been canceled.
+              </p>
 
-             <p className="mt-2 text-sm text-red-700">
-               Adding new properties and boilers is disabled.
-               Choose a plan to reactivate your account and
-               restore access.
-            </p>
+              <p className="mt-2 text-sm text-red-700">
+                Adding new properties and boilers is disabled.
+                Choose a plan to reactivate your account and
+                restore access.
+              </p>
 
-          <div className="mt-4 flex flex-wrap gap-3">
-       <Link
-         href="/pricing"
-         className="inline-flex items-center justify-center rounded-lg bg-red-700 px-5 py-3 font-semibold text-white transition hover:bg-red-600"
-      >
-          Reactivate Subscription
-      </Link>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Link
+                  href="/pricing"
+                  className="inline-flex items-center justify-center rounded-lg bg-red-700 px-5 py-3 font-semibold text-white transition hover:bg-red-600"
+                >
+                  Reactivate Subscription
+                </Link>
 
-      {hasBillingAccount && (
-        <Link
-          href="/api/billing/portal"
-          className="inline-flex items-center justify-center rounded-lg border border-red-300 bg-white px-5 py-3 font-semibold text-red-700 transition hover:bg-red-100"
-        >
-          Manage Billing
-        </Link>
-      )}
-    </div>
-  </div>
-)}
+                {hasBillingAccount && (
+                  <Link
+                    href="/api/billing/portal"
+                    className="inline-flex items-center justify-center rounded-lg border border-red-300 bg-white px-5 py-3 font-semibold text-red-700 transition hover:bg-red-100"
+                  >
+                    Manage Billing
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
         </section>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-2">
@@ -390,50 +390,49 @@ export default async function SettingsPage() {
               />
 
               <div>
-  <dt className="text-sm font-medium text-slate-500">
-    User Account
-  </dt>
+                <dt className="text-sm font-medium text-slate-500">
+                  User Account
+                </dt>
 
-  <dd className="mt-2">
-    <span
-      className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${
-        profile.is_active
-          ? "bg-emerald-50 text-emerald-700"
-          : "bg-red-50 text-red-700"
-      }`}
-    >
-      {profile.is_active
-        ? "Enabled"
-        : "Disabled"}
-    </span>
-  </dd>
-</div>
+                <dd className="mt-2">
+                  <span
+                    className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${profile.is_active
+                        ? "bg-emerald-50 text-emerald-700"
+                        : "bg-red-50 text-red-700"
+                      }`}
+                  >
+                    {profile.is_active
+                      ? "Enabled"
+                      : "Disabled"}
+                  </span>
+                </dd>
+              </div>
 
-<div>
-  <dt className="text-sm font-medium text-slate-500">
-    Subscription Access
-  </dt>
+              <div>
+                <dt className="text-sm font-medium text-slate-500">
+                  Subscription Access
+                </dt>
 
-  <dd className="mt-2">
-    <span
-      className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${subscriptionStatusClasses(
-        tenant.subscription_status
-      )}`}
-    >
-      {tenant.subscription_status === "active"
-        ? "Active"
-        : tenant.subscription_status === "trialing"
-          ? "Trial"
-          : tenant.subscription_status === "past_due"
-            ? "Payment Past Due"
-            : tenant.subscription_status === "canceled"
-              ? "Canceled"
-              : formatLabel(
-                  tenant.subscription_status
-                )}
-    </span>
-  </dd>
-</div>
+                <dd className="mt-2">
+                  <span
+                    className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${subscriptionStatusClasses(
+                      tenant.subscription_status
+                    )}`}
+                  >
+                    {tenant.subscription_status === "active"
+                      ? "Active"
+                      : tenant.subscription_status === "trialing"
+                        ? "Trial"
+                        : tenant.subscription_status === "past_due"
+                          ? "Payment Past Due"
+                          : tenant.subscription_status === "canceled"
+                            ? "Canceled"
+                            : formatLabel(
+                              tenant.subscription_status
+                            )}
+                  </span>
+                </dd>
+              </div>
             </dl>
           </section>
 
@@ -497,40 +496,40 @@ export default async function SettingsPage() {
 
           <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
             <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-             <div>
-                 <h2 className="text-2xl font-black text-slate-900">
-                     Account Actions
+              <div>
+                <h2 className="text-2xl font-black text-slate-900">
+                  Account Actions
                 </h2>
 
-              <p className="mt-2 text-slate-600">
-             Sign out of your PermitWatch account on this device.
-            </p>
-          </div>
-
-            <div className="shrink-0">
-             <LogoutButton />
+                <p className="mt-2 text-slate-600">
+                  Sign out of your PermitWatch account on this device.
+                </p>
               </div>
-           </div>
-         </section>
+
+              <div className="shrink-0">
+                <LogoutButton />
+              </div>
+            </div>
+          </section>
 
           <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-  <h2 className="text-2xl font-black text-slate-900">
-    Contact PermitWatch
-  </h2>
+            <h2 className="text-2xl font-black text-slate-900">
+              Contact PermitWatch
+            </h2>
 
-  <p className="mt-2 text-slate-600">
-    Questions about PermitWatch, your account, or general inquiries.
-  </p>
+            <p className="mt-2 text-slate-600">
+              Questions about PermitWatch, your account, or general inquiries.
+            </p>
 
-  <div className="mt-5">
-    <a
-      href="mailto:info@getpermitwatch.com"
-      className="font-semibold text-emerald-700 transition hover:text-emerald-600"
-    >
-      info@getpermitwatch.com
-    </a>
-  </div>
-</section>
+            <div className="mt-5">
+              <a
+                href="mailto:info@getpermitwatch.com"
+                className="font-semibold !text-emerald-700 transition hover:!text-emerald-600"
+              >
+                info@getpermitwatch.com
+              </a>
+            </div>
+          </section>
         </div>
       </div>
     </main>
