@@ -120,7 +120,7 @@ export default async function CustomersPage() {
                   <Link
                     key={customer.id}
                     href={`/customers/${customer.id}`}
-                    className="rounded-xl border border-slate-200 bg-white p-5 transition hover:border-slate-400 hover:bg-slate-50"
+                    className="rounded-xl border border-slate-200 bg-white p-5 text-slate-900 transition hover:border-emerald-500 hover:bg-emerald-50/40"
                   >
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                       <div>
@@ -130,11 +130,10 @@ export default async function CustomersPage() {
                           </h3>
 
                           <span
-                            className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                              customer.is_active
-                                ? "bg-emerald-50 text-emerald-700"
-                                : "bg-slate-100 text-slate-700"
-                            }`}
+                            className={`rounded-full px-3 py-1 text-xs font-semibold ${customer.is_active
+                              ? "bg-emerald-50 text-emerald-700"
+                              : "bg-slate-100 text-slate-700"
+                              }`}
                           >
                             {customer.is_active
                               ? "Active"

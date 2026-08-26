@@ -39,7 +39,7 @@ function getDaysRemaining(date: string | null) {
   return Math.ceil(
     (expiration.getTime() -
       todayStart.getTime()) /
-      86_400_000
+    86_400_000
   );
 }
 
@@ -382,7 +382,7 @@ export default async function PropertyPage({
                 const compliance =
                   getCompliance(
                     permit?.expiration_date ??
-                      null
+                    null
                   );
 
                 return (
@@ -439,7 +439,7 @@ export default async function PropertyPage({
 
                     <Link
                       href={`/properties/${property.id}/boilers/${boiler.id}`}
-                      className="mt-6 inline-flex font-semibold text-slate-900 transition hover:text-slate-600"
+                      className="mt-6 inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
                     >
                       View Boiler →
                     </Link>

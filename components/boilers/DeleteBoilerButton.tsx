@@ -44,7 +44,7 @@ export default function DeleteBoilerButton({
       <button
         type="button"
         onClick={() => setShowConfirm(true)}
-        className="inline-flex items-center justify-center rounded-lg border border-red-300 bg-white px-5 py-3 font-semibold text-red-700 transition hover:bg-red-50"
+        className="inline-flex items-center justify-center rounded-lg bg-red-600 px-5 py-3 font-semibold text-white transition hover:bg-red-500"
       >
         Delete Boiler
       </button>
