@@ -47,7 +47,7 @@ function getCompliance(expirationDate: string | null) {
 
   const daysRemaining = Math.ceil(
     (expiration.getTime() - todayStart.getTime()) /
-      (1000 * 60 * 60 * 24)
+    (1000 * 60 * 60 * 24)
   );
 
   if (daysRemaining < 0) {
@@ -56,9 +56,8 @@ function getCompliance(expirationDate: string | null) {
     return {
       label: "Expired",
       classes: "bg-red-50 text-red-700",
-      message: `${daysOverdue} ${
-        daysOverdue === 1 ? "day" : "days"
-      } overdue`,
+      message: `${daysOverdue} ${daysOverdue === 1 ? "day" : "days"
+        } overdue`,
     };
   }
 
@@ -66,9 +65,8 @@ function getCompliance(expirationDate: string | null) {
     return {
       label: "Expiring Soon",
       classes: "bg-amber-50 text-amber-700",
-      message: `${daysRemaining} ${
-        daysRemaining === 1 ? "day" : "days"
-      } remaining`,
+      message: `${daysRemaining} ${daysRemaining === 1 ? "day" : "days"
+        } remaining`,
     };
   }
 
@@ -84,8 +82,8 @@ export default async function BoilersPage() {
   const profile = await getCurrentProfile();
 
   if (!profile?.tenant_id) {
-  redirect("/login?next=/boilers");
-}
+    redirect("/login?next=/boilers");
+  }
 
   const { data: boilerData, error: boilersError } =
     await supabase
@@ -257,13 +255,13 @@ export default async function BoilersPage() {
 
               const propertyAddress = property
                 ? [
-                    property.address_line_1,
-                    property.city,
-                    property.state,
-                    property.postal_code,
-                  ]
-                    .filter(Boolean)
-                    .join(", ")
+                  property.address_line_1,
+                  property.city,
+                  property.state,
+                  property.postal_code,
+                ]
+                  .filter(Boolean)
+                  .join(", ")
                 : "Property information unavailable";
 
               return (
@@ -343,7 +341,7 @@ export default async function BoilersPage() {
                   {property && (
                     <Link
                       href={`/properties/${property.id}/boilers/${boiler.id}`}
-                      className="mt-6 inline-flex font-semibold text-slate-900 hover:text-slate-600"
+                      className="mt-6 inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold !text-white transition hover:bg-slate-700"
                     >
                       View Boiler →
                     </Link>

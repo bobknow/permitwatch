@@ -70,31 +70,31 @@ export default async function DocumentsPage() {
   }
 
   const documents: DocumentRow[] = (data ?? []).map((row) => {
-  const boiler = Array.isArray(row.boiler)
-    ? row.boiler[0] ?? null
-    : row.boiler;
+    const boiler = Array.isArray(row.boiler)
+      ? row.boiler[0] ?? null
+      : row.boiler;
 
-  const property = boiler
-    ? Array.isArray(boiler.property)
-      ? boiler.property[0] ?? null
-      : boiler.property
-    : null;
+    const property = boiler
+      ? Array.isArray(boiler.property)
+        ? boiler.property[0] ?? null
+        : boiler.property
+      : null;
 
-  return {
-    id: row.id,
-    permit_number: row.permit_number,
-    source_filename: row.source_filename,
-    storage_path: row.storage_path,
-    created_at: row.created_at,
-    boiler: boiler
-      ? {
+    return {
+      id: row.id,
+      permit_number: row.permit_number,
+      source_filename: row.source_filename,
+      storage_path: row.storage_path,
+      created_at: row.created_at,
+      boiler: boiler
+        ? {
           id: boiler.id,
           boiler_number: boiler.boiler_number,
           property,
         }
-      : null,
-  };
-});;
+        : null,
+    };
+  });;
 
   return (
     <main className="min-h-screen bg-slate-100 p-6 md:p-10">
@@ -222,7 +222,7 @@ export default async function DocumentsPage() {
 
                             <Link
                               href={`/permits/${doc.id}`}
-                              className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
+                              className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-3 py-2 text-sm font-semibold !text-white transition hover:bg-slate-700"
                             >
                               Details
                             </Link>
